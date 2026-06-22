@@ -122,3 +122,25 @@ export async function createProduct(body: CreateProductBody): Promise<ApiProduct
 export async function deleteProduct(id: string): Promise<void> {
     return apiFetch<void>(`/products/${id}`, { method: 'DELETE' });
 }
+
+// ─── Dashboard ─── //
+
+export interface ApiProductSalesData {
+    name: string;
+    category: string;
+    quantity: number;
+}
+
+export interface ApiDashboardStatsData {
+    grossRevenue: number;
+    netRevenue: number;
+    grossProfit: number;
+    netProfit: number;
+    totalOrders: number;
+    monthlyStats: { month: string, revenue: number, orders: number }[];
+    topSellingProducts: ApiProductSalesData[];
+}
+
+export async function getDashboardStats(): Promise<ApiDashboardStatsData> {
+    return apiFetch<ApiDashboardStatsData>('/dashboard/stats');
+}
