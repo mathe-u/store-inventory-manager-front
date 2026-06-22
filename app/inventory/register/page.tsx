@@ -70,7 +70,7 @@ export default function RegisterProductPage() {
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !sku || !category) {
-            setSaveError("Please fill in all basic product information.");
+            setSaveError("Por favor, preencha todas as informações básicas do produto.");
             return;
         }
 
@@ -94,7 +94,7 @@ export default function RegisterProductPage() {
             });
             router.push("/inventory");
         } catch (err) {
-            setSaveError(err instanceof Error ? err.message : "Failed to save product.");
+            setSaveError(err instanceof Error ? err.message : "Falha ao salvar produto.");
             setIsSaving(false);
         }
     };
@@ -109,11 +109,11 @@ export default function RegisterProductPage() {
                 <div>
                     <div className="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm mb-2">
                         <span className="material-symbols-outlined text-[16px]">inventory_2</span>
-                        <span>Inventory</span>
+                        <span>Inventário</span>
                         <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                        <span className="text-on-surface">Register Product</span>
+                        <span className="text-on-surface">Cadastrar Produto</span>
                     </div>
-                    <h2 className="font-headline-md text-headline-md text-on-surface">New Product Listing</h2>
+                    <h2 className="font-headline-md text-headline-md text-on-surface">Novo Produto</h2>
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -122,7 +122,7 @@ export default function RegisterProductPage() {
                         disabled={isSaving}
                         className="px-4 py-2 rounded-DEFAULT border border-outline text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-lowest transition-colors cursor-pointer disabled:opacity-60"
                     >
-                        Cancel
+                        Cancelar
                     </button>
                     <button
                         type="button"
@@ -135,7 +135,7 @@ export default function RegisterProductPage() {
                         ) : (
                             <span className="material-symbols-outlined text-[16px]">save</span>
                         )}
-                        {isSaving ? "Saving..." : "Save Product"}
+                        {isSaving ? "Salvando..." : "Salvar Produto"}
                     </button>
                 </div>
             </div>
@@ -160,16 +160,16 @@ export default function RegisterProductPage() {
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2 font-semibold">
                                 <span className="material-symbols-outlined text-primary">info</span>
-                                Basic Information
+                                Informações Básicas
                             </h3>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2 flex flex-col gap-1.5">
-                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="productName">Product Name</label>
+                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="productName">Nome do Produto</label>
                                 <input
                                     className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT text-on-surface placeholder:text-on-surface-variant placeholder:opacity-55 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-container transition-all"
                                     id="productName"
-                                    placeholder="e.g. Wireless Bluetooth Headphones Pro"
+                                    placeholder="Ex: Fone de Ouvido Bluetooth Pro"
                                     type="text"
                                     required
                                     value={name}
@@ -189,7 +189,7 @@ export default function RegisterProductPage() {
                                 />
                             </div>
                             <div className="flex flex-col gap-1.5">
-                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="productCategory">Category</label>
+                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="productCategory">Categoria</label>
                                 <div className="relative">
                                     <select
                                         className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT text-on-surface placeholder:text-on-surface-variant placeholder:opacity-55 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-container transition-all appearance-none"
@@ -198,17 +198,17 @@ export default function RegisterProductPage() {
                                         value={category}
                                         onChange={(e) => setCategory(e.target.value)}
                                     >
-                                        <option value="" disabled>Select category...</option>
-                                        <option value="Electronics">Electronics &amp; Audio</option>
-                                        <option value="Home Goods">Home Goods</option>
-                                        <option value="Apparel">Apparel</option>
-                                        <option value="Other">Other</option>
+                                        <option value="" disabled>Selecione a categoria...</option>
+                                        <option value="Eletrônicos">Eletrônicos</option>
+                                        <option value="Casa">Casa</option>
+                                        <option value="Vestuário">Vestuário</option>
+                                        <option value="Outros">Outros</option>
                                     </select>
                                     <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
                                 </div>
                             </div>
                             <div className="flex flex-col gap-1.5">
-                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="costPrice">Base Cost Price (Acquisition)</label>
+                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="costPrice">Preço de Custo (Aquisição)</label>
                                 <div className="relative flex items-center">
                                     <span className="absolute left-3 text-on-surface-variant font-data-tabular font-bold">R$</span>
                                     <input
@@ -224,7 +224,7 @@ export default function RegisterProductPage() {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-1.5">
-                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="stockQuantity">Initial Stock Quantity</label>
+                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="stockQuantity">Quantidade de Estoque Inicial</label>
                                 <input
                                     className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT text-on-surface placeholder:text-on-surface-variant placeholder:opacity-55 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-container transition-all text-right font-data-tabular"
                                     id="stockQuantity"
@@ -245,16 +245,16 @@ export default function RegisterProductPage() {
                             <div>
                                 <h3 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2 font-semibold">
                                     <span className="material-symbols-outlined text-secondary">calculate</span>
-                                    Intelligent Pricing
+                                    Precificação Inteligente
                                 </h3>
-                                <p className="font-body-md text-body-md text-on-surface-variant mt-1">Adjust parameters to simulate your financial outcomes.</p>
+                                <p className="font-body-md text-body-md text-on-surface-variant mt-1">Ajuste os parâmetros para simular seus resultados financeiros.</p>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 relative z-10">
                             {/* Selling Price */}
                             <div className="flex flex-col gap-1.5 p-3 rounded-lg bg-surface border border-outline-variant hover:border-secondary transition-colors group">
                                 <div className="flex justify-between items-center">
-                                    <label className="font-label-sm text-label-sm text-on-surface" htmlFor="sellingPrice">Intended Selling Price</label>
+                                    <label className="font-label-sm text-label-sm text-on-surface" htmlFor="sellingPrice">Preço de Venda Pretendido</label>
                                     <span className="material-symbols-outlined text-on-surface-variant text-[16px] group-hover:text-secondary">storefront</span>
                                 </div>
                                 <div className="relative flex items-center mt-1">
@@ -275,7 +275,7 @@ export default function RegisterProductPage() {
                             {/* Desired Margin */}
                             <div className="flex flex-col gap-1.5 p-3 rounded-lg bg-surface border border-outline-variant hover:border-secondary transition-colors group">
                                 <div className="flex justify-between items-center">
-                                    <label className="font-label-sm text-label-sm text-on-surface" htmlFor="desiredMargin">Target Net Margin</label>
+                                    <label className="font-label-sm text-label-sm text-on-surface" htmlFor="desiredMargin">Margem de Lucro Desejada</label>
                                     <span className="material-symbols-outlined text-on-surface-variant text-[16px] group-hover:text-secondary">trending_up</span>
                                 </div>
                                 <div className="relative flex items-center mt-1">
@@ -295,7 +295,7 @@ export default function RegisterProductPage() {
 
                             {/* Shipping Cost */}
                             <div className="flex flex-col gap-1.5 p-3 rounded-lg bg-surface border border-outline-variant">
-                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="shippingCost">Estimated Shipping Cost</label>
+                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="shippingCost">Custo de Envio Estimado</label>
                                 <div className="relative flex items-center">
                                     <span className="absolute left-3 text-on-surface-variant font-data-tabular">R$</span>
                                     <input
@@ -313,7 +313,7 @@ export default function RegisterProductPage() {
 
                             {/* ICMS Tax */}
                             <div className="flex flex-col gap-1.5 p-3 rounded-lg bg-surface border border-outline-variant">
-                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="icmsTax">ICMS / Marketplace Fee</label>
+                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="icmsTax">ICMS / Taxas Marketplace</label>
                                 <div className="relative flex items-center">
                                     <input
                                         className="w-full pr-6 py-2 bg-surface border border-outline-variant rounded-DEFAULT text-on-surface placeholder:text-on-surface-variant placeholder:opacity-55 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-container transition-all text-right font-data-tabular"
@@ -337,12 +337,12 @@ export default function RegisterProductPage() {
                     <div className="bg-primary-container rounded-xl shadow-lg border border-primary-fixed-dim overflow-hidden flex flex-col h-full">
                         {/* Results Header */}
                         <div className="p-5 border-b border-on-primary-fixed-variant bg-inverse-surface">
-                            <h3 className="font-label-sm text-label-sm text-inverse-primary uppercase tracking-wider font-semibold">Financial Projection</h3>
+                            <h3 className="font-label-sm text-label-sm text-inverse-primary uppercase tracking-wider font-semibold">Projeção Financeira</h3>
                         </div>
 
                         {/* Primary Metric: Net Profit */}
                         <div className="p-6 flex flex-col items-center justify-center border-b border-on-primary-fixed-variant bg-primary-container">
-                            <span className="font-label-sm text-label-sm text-on-primary-container mb-2">Net Profit per Unit</span>
+                            <span className="font-label-sm text-label-sm text-on-primary-container mb-2">Lucro Líquido por Unidade</span>
                             <div className="flex items-baseline gap-1" key={`profit-${flashKey}`}>
                                 <span className="font-data-tabular text-primary-fixed-dim text-xl">R$</span>
                                 <span className={`${status.valueClass} value-updated`} id="calcNetProfit">
@@ -369,7 +369,7 @@ export default function RegisterProductPage() {
                             <div className="flex justify-between items-center pb-3 border-b border-on-primary-fixed-variant/50">
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-on-primary-container text-[18px]">pie_chart</span>
-                                    <span className="font-body-md text-body-md text-primary-fixed-dim">Contribution Margin</span>
+                                    <span className="font-body-md text-body-md text-primary-fixed-dim">Margem de Contribuição</span>
                                 </div>
                                 <span className="font-data-tabular text-on-primary font-medium value-updated" key={`contribution-${flashKey}`}>
                                     {contributionMargin.toFixed(1)}%
@@ -378,8 +378,8 @@ export default function RegisterProductPage() {
 
                             <div className="flex justify-between items-center pt-2">
                                 <div className="flex flex-col">
-                                    <span className="font-label-sm text-label-sm text-secondary-fixed-dim">Suggested Min. Price</span>
-                                    <span className="text-xs text-on-primary-container mt-0.5">To meet target margin</span>
+                                    <span className="font-label-sm text-label-sm text-secondary-fixed-dim">Preço Mínimo Sugerido</span>
+                                    <span className="text-xs text-on-primary-container mt-0.5">Para atingir a margem desejada</span>
                                 </div>
                                 <div className="flex items-baseline gap-1">
                                     <span className="font-data-tabular text-primary-fixed-dim text-sm">R$</span>
@@ -403,7 +403,7 @@ export default function RegisterProductPage() {
                                 ) : (
                                     <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
                                 )}
-                                {isSaving ? "Saving..." : "Apply Pricing"}
+                                {isSaving ? "Salvando..." : "Aplicar Precificação"}
                             </button>
                         </div>
                     </div>
