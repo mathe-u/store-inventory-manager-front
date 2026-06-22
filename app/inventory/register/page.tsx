@@ -11,14 +11,14 @@ export default function RegisterProductPage() {
     const [name, setName] = useState("");
     const [sku, setSku] = useState("");
     const [category, setCategory] = useState("");
-    const [costPrice, setCostPrice] = useState("150.00");
+    const [costPrice, setCostPrice] = useState("0.00");
     const [stockQuantity, setStockQuantity] = useState("0");
 
     // Pricing Parameter States
-    const [sellingPrice, setSellingPrice] = useState("349.90");
-    const [desiredMargin, setDesiredMargin] = useState("20");
-    const [shippingCost, setShippingCost] = useState("25.00");
-    const [icmsTax, setIcmsTax] = useState("18");
+    const [sellingPrice, setSellingPrice] = useState("0.00");
+    const [desiredMargin, setDesiredMargin] = useState("5");
+    const [shippingCost, setShippingCost] = useState("24.00");
+    const [icmsTax, setIcmsTax] = useState("20");
 
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState("");
