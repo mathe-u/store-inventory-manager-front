@@ -46,19 +46,19 @@ export default function RegisterProductPage() {
     const getStatusStyling = (profit: number) => {
         if (profit > 0) {
             return {
-                text: "PROFITABLE",
+                text: "LUCRO",
                 badgeClass: "mt-3 px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-tertiary-container text-on-tertiary-container",
                 valueClass: "font-data-tabular text-tertiary-fixed text-4xl font-bold tracking-tight",
             };
         } else if (profit < 0) {
             return {
-                text: "LOSS WARNING",
+                text: "PREJUÍZO",
                 badgeClass: "mt-3 px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-error-container text-on-error-container",
                 valueClass: "font-data-tabular text-error text-4xl font-bold tracking-tight",
             };
         } else {
             return {
-                text: "BREAK EVEN",
+                text: "PONTO DE EQUILÍBRIO",
                 badgeClass: "mt-3 px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-surface-variant text-on-surface-variant",
                 valueClass: "font-data-tabular text-primary-fixed text-4xl font-bold tracking-tight",
             };
@@ -67,7 +67,7 @@ export default function RegisterProductPage() {
 
     const status = getStatusStyling(netProfit);
 
-    const handleSave = async (e: React.FormEvent) => {
+    const handleSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
         if (!name || !sku || !category) {
             setSaveError("Por favor, preencha todas as informações básicas do produto.");
