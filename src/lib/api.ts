@@ -141,6 +141,6 @@ export interface ApiDashboardStatsData {
     topSellingProducts: ApiProductSalesData[];
 }
 
-export async function getDashboardStats(): Promise<ApiDashboardStatsData> {
-    return apiFetch<ApiDashboardStatsData>('/dashboard/stats');
+export async function getDashboardStats(days: number = 30): Promise<ApiDashboardStatsData> {
+    return apiFetch<ApiDashboardStatsData>(`dashboard/stats?days=${days}`);
 }

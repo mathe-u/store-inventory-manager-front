@@ -11,8 +11,11 @@ export default function DashboardLayout({
 }>) {
     const pathname = usePathname();
 
-    // Helper to check if item is active (both inventory root and inventory/register fall under inventory)
-    const isInventoryActive = pathname.startsWith("/dashboard");
+    // Verificadores de rota ativa (ajustados para cada página)
+    const isDashboardActive = pathname === "/dashboard";
+    const isInventoryActive = pathname.startsWith("/inventory");
+    const isSalesActive = pathname.startsWith("/sales");
+    const isReportsActive = pathname.startsWith("/reports");
 
     return (
         <div className="min-h-screen bg-background font-body-md text-body-md text-on-background">
@@ -26,24 +29,29 @@ export default function DashboardLayout({
                 </div>
 
                 <ul className="flex flex-col flex-grow gap-1 px-4">
+                    {/* Item: Dashboard */}
                     <li>
                         <Link
                             href="/dashboard"
-                            className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors active:scale-95 duration-100"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${isDashboardActive
+                                    ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
+                                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+                                }`}
                         >
-                            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>
+                            <span className="material-symbols-outlined" style={{ fontVariationSettings: isDashboardActive ? "'FILL' 1" : "'FILL' 0" }}>
                                 dashboard
                             </span>
                             <span className="font-body-md text-body-md">Dashboard</span>
                         </Link>
                     </li>
-                    {/* Active State: Inventory */}
+
+                    {/* Item: Inventory */}
                     <li>
                         <Link
                             href="/inventory"
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${isInventoryActive
-                                ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
-                                : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+                                    ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
+                                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
                                 }`}
                         >
                             <span className="material-symbols-outlined" style={{ fontVariationSettings: isInventoryActive ? "'FILL' 1" : "'FILL' 0" }}>
@@ -52,23 +60,33 @@ export default function DashboardLayout({
                             <span className="font-body-md text-body-md">Inventory</span>
                         </Link>
                     </li>
+
+                    {/* Item: Sales */}
                     <li>
                         <Link
                             href="/sales"
-                            className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors active:scale-95 duration-100"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${isSalesActive
+                                    ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
+                                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+                                }`}
                         >
-                            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>
+                            <span className="material-symbols-outlined" style={{ fontVariationSettings: isSalesActive ? "'FILL' 1" : "'FILL' 0" }}>
                                 receipt_long
                             </span>
                             <span className="font-body-md text-body-md">Sales</span>
                         </Link>
                     </li>
+
+                    {/* Item: Reports */}
                     <li>
                         <Link
                             href="/reports"
-                            className="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors active:scale-95 duration-100"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${isReportsActive
+                                    ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
+                                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+                                }`}
                         >
-                            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>
+                            <span className="material-symbols-outlined" style={{ fontVariationSettings: isReportsActive ? "'FILL' 1" : "'FILL' 0" }}>
                                 analytics
                             </span>
                             <span className="font-body-md text-body-md">Reports</span>
@@ -76,6 +94,7 @@ export default function DashboardLayout({
                     </li>
                 </ul>
 
+                {/* Área do Perfil (Mantida igual) */}
                 <div className="px-6 mt-auto">
                     <div className="flex items-center gap-3 pt-4 border-t border-outline-variant">
                         <div className="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden relative">
