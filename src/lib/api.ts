@@ -1,146 +1,157 @@
-const BASE_URL = 'http://127.0.0.1:3333/api/v1';
+const BASE_URL = "http://127.0.0.1:3333/api/v1";
 
 function getToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('API_TOKEN');
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("API_TOKEN");
 }
 
 async function apiFetch<T>(
-    path: string,
-    options: RequestInit = {}
+  path: string,
+  options: RequestInit = {},
 ): Promise<T> {
-    const token = getToken();
-    const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        ...(options.headers as Record<string, string>),
-    };
+  const token = getToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string>),
+  };
 
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
-    const response = await fetch(`${BASE_URL}/${path}`, {
-        ...options,
-        headers,
-    });
+  const response = await fetch(`${BASE_URL}/${path}`, {
+    ...options,
+    headers,
+  });
 
-    if (response.status === 404) {
-        const error = await response.json().catch(() => ({ message: `Erro ao conectar com o servidor: ${response.statusText}` }));
-        throw new Error(error?.message ?? 'API request failed');
-    }
+  if (response.status === 404) {
+    const error = await response.json().catch(() => ({
+      message: `Erro ao conectar com o servidor: ${response.statusText}`,
+    }));
+    throw new Error(error?.message ?? "API request failed");
+  }
 
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: `API Request failed: ${response.statusText}` }));
-        throw new Error(error?.message ?? 'API request failed');
-    }
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ message: `API Request failed: ${response.statusText}` }));
+    throw new Error(error?.message ?? "API request failed");
+  }
 
-    return response.json();
+  return response.json();
 }
-
 
 // ─── Authentication ─── //
 
 export interface LoginResponse {
-    token: string;
+  token: string;
 }
 
 export async function login(email: string, password: string) {
-    return apiFetch<LoginResponse>('auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-    });
+  return apiFetch<LoginResponse>("auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
 }
 
 // ─── Categories ─── //
 
 export interface ApiCategory {
-    id: string;
-    name: string;
-    description: string | null;
-    color: string;
-    createdAt: string;
-    updatedAt: string;
-    _count?: { products: number };
+  id: string;
+  name: string;
+  description: string | null;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { products: number };
 }
 
 // ─── Products ─── //
 
 export interface ApiProduct {
-    id: string;
-    name: string;
-    imageUrl: string | null;
-    stockQuantity: number;
-    minStockAlert: number;
-    metadata: string; // raw JSON string from DB
-    acquisitionCost: number;
-    shippingCost: number;
-    taxRate: number;       // decimal: 0.18 = 18%
-    directCosts: number;
-    timeSpent: number;
-    lossIndex: number;     // decimal: 0.05 = 5%
-    desiredMargin: number; // decimal: 0.30 = 30%
-    categoryId: string | null;
-    category: ApiCategory | null;
-    createdAt: string;
-    updatedAt: string;
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  stockQuantity: number;
+  minStockAlert: number;
+  metadata: string; // raw JSON string from DB
+  acquisitionCost: number;
+  shippingCost: number;
+  taxRate: number; // decimal: 0.18 = 18%
+  directCosts: number;
+  timeSpent: number;
+  lossIndex: number; // decimal: 0.05 = 5%
+  desiredMargin: number; // decimal: 0.30 = 30%
+  categoryId: string | null;
+  category: ApiCategory | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface ApiProductDetail {
-}
+export interface ApiProductDetail {}
 
 export interface CreateProductBody {
-    name: string;
-    stockQuantity?: number;
-    minStockAlert?: number;
-    metadata?: Record<string, unknown>;
-    acquisitionCost: number;
-    shippingCost: number;
-    taxRate: number;       // decimal: 0.18 = 18%
-    directCosts?: number;
-    timeSpent?: number;
-    lossIndex?: number;
-    desiredMargin: number; // decimal: 0.30 = 30%
-    imageUrl?: string;
-    categoryId?: string;
+  name: string;
+  stockQuantity?: number;
+  minStockAlert?: number;
+  metadata?: Record<string, unknown>;
+  acquisitionCost: number;
+  shippingCost: number;
+  taxRate: number; // decimal: 0.18 = 18%
+  directCosts?: number;
+  timeSpent?: number;
+  lossIndex?: number;
+  desiredMargin: number; // decimal: 0.30 = 30%
+  imageUrl?: string;
+  categoryId?: string;
 }
 
 export async function getProducts(): Promise<ApiProduct[]> {
-    return apiFetch<ApiProduct[]>('products/');
+  return apiFetch<ApiProduct[]>("products/");
 }
 
 export async function getProductById(id: string): Promise<ApiProductDetail> {
-    return apiFetch<ApiProductDetail>(`products/${id}`);
+  return apiFetch<ApiProductDetail>(`products/${id}`);
 }
 
-export async function createProduct(body: CreateProductBody): Promise<ApiProduct> {
-    return apiFetch<ApiProduct>('/products/', {
-        method: 'POST',
-        body: JSON.stringify(body),
-    });
+export async function createProduct(
+  body: CreateProductBody,
+): Promise<ApiProduct> {
+  return apiFetch<ApiProduct>("/products/", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-    return apiFetch<void>(`/products/${id}`, { method: 'DELETE' });
+  return apiFetch<void>(`/products/${id}`, { method: "DELETE" });
 }
 
 // ─── Dashboard ─── //
 
 export interface ApiProductSalesData {
-    name: string;
-    category: string;
-    quantity: number;
+  name: string;
+  category: string;
+  quantity: number;
 }
 
 export interface ApiDashboardStatsData {
-    grossRevenue: number;
-    netRevenue: number;
-    grossProfit: number;
-    netProfit: number;
-    totalOrders: number;
-    monthlyStats: { month: string, revenue: number, orders: number }[];
-    topSellingProducts: ApiProductSalesData[];
+  grossRevenue: number;
+  grossRevenueDelta: number;
+  netRevenue: number;
+  netRevenueDelta: number;
+  grossProfit: number;
+  grossProfitDelta: number;
+  netProfit: number;
+  netProfitDelta: number;
+  totalOrders: number;
+  totalOrdersDelta: number;
+  monthlyStats: { month: string; revenue: number; orders: number }[];
+  topSellingProducts: ApiProductSalesData[];
 }
 
-export async function getDashboardStats(days: number = 30): Promise<ApiDashboardStatsData> {
-    return apiFetch<ApiDashboardStatsData>(`dashboard/stats?days=${days}`);
+export async function getDashboardStats(
+  days: number = 30,
+): Promise<ApiDashboardStatsData> {
+  return apiFetch<ApiDashboardStatsData>(`dashboard/stats?days=${days}`);
 }
