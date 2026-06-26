@@ -130,8 +130,9 @@ export async function deleteProduct(id: string): Promise<void> {
 // ─── Dashboard ─── //
 
 export interface ApiProductSalesData {
+  productId: string;
   name: string;
-  category: string;
+  category: string | null;
   quantity: number;
 }
 
@@ -146,12 +147,26 @@ export interface ApiDashboardStatsData {
   netProfitDelta: number;
   totalOrders: number;
   totalOrdersDelta: number;
-  monthlyStats: { month: string; revenue: number; orders: number }[];
-  topSellingProducts: ApiProductSalesData[];
+  monthlyStats: { date: string; grossRevenue: number; costs: number }[];
+  topSelling: ApiProductSalesData[];
+}
+
+export interface ApiProductPriceEvolution {
+  date: string;
+  price: number;
 }
 
 export async function getDashboardStats(
   days: number = 30,
 ): Promise<ApiDashboardStatsData> {
   return apiFetch<ApiDashboardStatsData>(`dashboard/stats?days=${days}`);
+}
+
+export async function getProductPriceEvolution(
+  productId: string,
+  days: number = 30,
+): Promise<ApiProductPriceEvolution[]> {
+  return apiFetch<ApiProductPriceEvolution[]>(
+    `dashboard/product-price-evolution/${productId}?days=${days}`,
+  );
 }
