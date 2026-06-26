@@ -67,23 +67,32 @@ export default function DashboardPage() {
 
         for (let i = 11; i >= 0; i--) {
           const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
-          // Altere a formatação abaixo ('pt-BR' ou 'en-US') e o formato de acordo com o que sua API retorna (ex: "2026-06" ou "06/2026")
-          const label = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-          months.push(label);
+          const apiLabel = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+          const formatter = new Intl.DateTimeFormat("pt-BR", {
+            month: "short",
+          });
+          const shortMonth = formatter.format(d).replace(".", "");
+          const visualLabel =
+            shortMonth.charAt(0).toUpperCase() + shortMonth.slice(1);
+
+          months.push({ apiLabel, visualLabel });
         }
         return months;
       };
 
-      const labels = generateLast12Months();
-      const revenueData = labels.map((monthLabel) => {
+      const monthsConfig = generateLast12Months();
+      const labels = monthsConfig.map((month) => month.visualLabel);
+
+      const revenueData = monthsConfig.map((m) => {
         const matchedStat = dashboardStats.monthlyStats?.find(
-          (s) => s.date === monthLabel,
+          (s) => s.date === m.apiLabel,
         );
         return matchedStat ? matchedStat.grossRevenue : 0;
       });
-      const costsData = labels.map((monthLabel) => {
+      const costsData = monthsConfig.map((m) => {
         const matchedStat = dashboardStats.monthlyStats?.find(
-          (s) => s.date === monthLabel,
+          (s) => s.date === m.apiLabel,
         );
         return matchedStat ? matchedStat.costs : 0;
       });
@@ -98,17 +107,18 @@ export default function DashboardPage() {
               data: revenueData,
               backgroundColor: "#0051d5", // color-secondary
               borderRadius: 10,
-              categoryPercentage: 0.8,
-              // barPercentage: 0.6,
-              barThickness: 15,
+              categoryPercentage: 0.7,
+              barPercentage: 0.6,
+              // barThickness: 15,
             },
             {
               label: "Custos",
               data: costsData,
               backgroundColor: "#dbe1ff", // color-secondary-fixed
               borderRadius: 10,
-              categoryPercentage: 0.8,
-              barThickness: 15,
+              categoryPercentage: 0.7,
+              barPercentage: 0.6,
+              // barThickness: 15,
             },
           ],
         },
