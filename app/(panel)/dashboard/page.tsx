@@ -277,7 +277,16 @@ export default function DashboardPage() {
       gradientBlue.addColorStop(0, "rgba(0, 81, 213, 0.2)");
       gradientBlue.addColorStop(1, "rgba(0, 81, 213, 0)");
 
-      const priceLabels = priceEvolution.map((item) => item.date);
+      const priceLabels = priceEvolution.map((item) => {
+        const [year, month, day] = item.date.split("-").map(Number);
+        const dateObj = new Date(year, month - 1, day);
+
+        return new Intl.DateTimeFormat("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+        }).format(dateObj); // Retorna no formato "DD/MM"
+      });
+
       const priceData = priceEvolution.map((item) => item.price);
 
       priceEvolutionChartInstance.current = new Chart(ctxPrice, {
