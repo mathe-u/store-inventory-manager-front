@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { getDashboardStats, ApiDashboardStatsData } from "@/src/lib/api";
+import {
+  getDashboardStats,
+  getProductPriceEvolution,
+  ApiDashboardStatsData,
+  ApiProductPriceEvolution,
+} from "@/src/lib/api";
 import Chart from "chart.js/auto";
+import Link from "next/link";
 
 Chart.defaults.font.family = "JetBrains Mono, monospace";
 Chart.defaults.color = "#76777d";
@@ -23,22 +29,69 @@ Chart.defaults.plugins.tooltip.cornerRadius = 4;
 export default function DashboardPage() {
   const [dashboardStats, setDashboardStats] =
     useState<ApiDashboardStatsData | null>(null);
+  const [priceEvolution, setPriceEvolution] = useState<
+    ApiProductPriceEvolution[] | null
+  >(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<number>(30);
 
   const revenueCostChartRef = useRef<HTMLCanvasElement | null>(null);
   const marginChartRef = useRef<HTMLCanvasElement | null>(null);
+  const priceEvolutionChartRef = useRef<HTMLCanvasElement | null>(null);
 
   const revenueChartInstance = useRef<Chart | null>(null);
   const marginChartInstance = useRef<Chart | null>(null);
+  const priceEvolutionChartInstance = useRef<Chart | null>(null);
 
   async function loadDashboardStats(daysSelected: number) {
     try {
       setIsLoading(true);
       setError(null);
+
       const stats = await getDashboardStats(daysSelected);
       setDashboardStats(stats);
+
+      if (stats.topSelling && stats.topSelling.length > 0) {
+        const topProductId = stats.topSelling[0].productId;
+        const evolution: ApiProductPriceEvolution[] = [
+          { date: "2025-01-09", price: 50 },
+          { date: "2025-01-10", price: 20 },
+          { date: "2025-01-11", price: 30 },
+          { date: "2025-01-12", price: 40 },
+          { date: "2025-01-01", price: 50 },
+          { date: "2025-01-02", price: 60 },
+          { date: "2025-01-03", price: 70 },
+          { date: "2025-01-04", price: 80 },
+          { date: "2025-01-05", price: 60 },
+          { date: "2025-01-06", price: 50 },
+        ];
+        setPriceEvolution(evolution);
+
+        // try {
+        //   const evolution = await getProductPriceEvolution(
+        //     topProductId,
+        //     daysSelected,
+        //   );
+
+        //   if (Array.isArray(evolution)) {
+        //     setPriceEvolution(evolution);
+        //   } else {
+        //     console.warn(
+        //       "API de evolução de preço retornou um formato inválido:",
+        //       evolution,
+        //     );
+
+        //     setPriceEvolution(null);
+        //   }
+        // } catch (evoError) {
+        //   console.error("Erro ao carregar a evolução de preço:", evoError);
+        //   setPriceEvolution(null);
+        // }
+      } else {
+        setPriceEvolution(null);
+      }
     } catch (error) {
       console.error("Erro ao carregar as estatísticas do dashboard:", error);
       setError(
@@ -180,7 +233,6 @@ export default function DashboardPage() {
               borderWidth: 2,
               borderColor: "#ffffff", // surface-container-lowest
               hoverOffset: 4,
-              // cutout: "75%"
             },
           ],
         },
@@ -208,6 +260,92 @@ export default function DashboardPage() {
       if (marginChartInstance.current) marginChartInstance.current.destroy();
     };
   }, [dashboardStats]);
+
+  // Price Evolution Chart
+  useEffect(() => {
+    if (!priceEvolution) return;
+
+    if (priceEvolutionChartRef.current) {
+      if (priceEvolutionChartInstance.current) {
+        priceEvolutionChartInstance.current.destroy();
+      }
+
+      const ctxPrice = priceEvolutionChartRef.current.getContext("2d");
+      if (!ctxPrice) return;
+
+      const gradientBlue = ctxPrice.createLinearGradient(0, 0, 0, 400);
+      gradientBlue.addColorStop(0, "rgba(0, 81, 213, 0.2)");
+      gradientBlue.addColorStop(1, "rgba(0, 81, 213, 0)");
+
+      const priceLabels = priceEvolution.map((item) => item.date);
+      const priceData = priceEvolution.map((item) => item.price);
+
+      priceEvolutionChartInstance.current = new Chart(ctxPrice, {
+        type: "line",
+        data: {
+          labels: priceLabels,
+          datasets: [
+            {
+              label: "Preço Médio",
+              data: priceData,
+              borderColor: "#0051d5", // secondary
+              borderWidth: 2,
+              backgroundColor: gradientBlue,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHoverRadius: 6,
+              pointHoverBackgroundColor: "#ffffff",
+              pointHoverBorderColor: "#0051d5",
+              pointHoverBorderWidth: 2,
+            },
+          ],
+        },
+
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: "index",
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              display: false,
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  return " R$ " + context.parsed.y;
+                },
+              },
+            },
+          },
+          scales: {
+            y: {
+              border: { display: false },
+              grid: {
+                // borderDash: [4, 4],
+              },
+              ticks: {
+                callback: function (value) {
+                  return "R$" + value;
+                },
+              },
+            },
+            x: {
+              grid: { display: false },
+            },
+          },
+        },
+      });
+    }
+    return () => {
+      if (priceEvolutionChartInstance.current) {
+        priceEvolutionChartInstance.current.destroy();
+      }
+    };
+  }, [priceEvolution]);
 
   if (isLoading) {
     return (
@@ -277,7 +415,7 @@ export default function DashboardPage() {
                   : "text-on-surface-variant hover:text-on-surface"
               }`}
             >
-              30 Days
+              30 Dias
             </button>
 
             <button
@@ -288,7 +426,7 @@ export default function DashboardPage() {
                   : "text-on-surface-variant hover:text-on-surface"
               }`}
             >
-              90 Days
+              90 Dias
             </button>
 
             <button
@@ -299,7 +437,7 @@ export default function DashboardPage() {
                   : "text-on-surface-variant hover:text-on-surface"
               }`}
             >
-              12 Months
+              12 Meses
             </button>
           </div>
 
@@ -564,6 +702,129 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Charts Row 2: Price Evolution & Bestsellers */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Price Evolution Line Graph */}
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 lg:col-span-2 flex flex-col h-[450px]">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h3 className="font-headline-md text-headline-md text-on-surface">
+                Evolução de Preço
+              </h3>
+              <p className="font-body-md text-body-md text-on-surface-variant text-sm mt-1">
+                Tendências históricas de preços de itens de estoque.
+              </p>
+            </div>
+            {/* <select className="bg-surface-container-low border border-outline-variant text-on-surface font-body-md text-body-md text-sm rounded-lg focus:ring-secondary focus:border-secondary block p-2">
+              <option>Sony WH-1000XM5</option>
+              <option>Apple AirPods Pro 2</option>
+              <option>Nintendo Switch OLED</option>
+            </select> */}
+          </div>
+          <div className="flex-1 relative w-full h-full">
+            <canvas
+              ref={priceEvolutionChartRef}
+              id="priceEvolutionChart"
+            ></canvas>
+          </div>
+        </div>
+
+        {/* Bestselling Products Table */}
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col h-[450px] overflow-hidden">
+          <div className="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest z-10">
+            <h3 className="font-headline-md text-headline-md text-on-surface">
+              Produtos Mais Vendidos
+            </h3>
+            <Link
+              href={"/inventory"}
+              className="font-label-sm text-label-sm text-secondary hover:text-on-secondary-fixed-variant transition-colors"
+            >
+              Ver Todos
+            </Link>
+          </div>
+          <div className="overflow-y-auto flex-1 p-0">
+            <table className="w-full text-left border-collapse">
+              <thead className="sticky top-0 bg-surface-container-lowest border-b border-outline-variant shadow-sm z-10">
+                <tr>
+                  <th className="font-label-sm text-label-sm text-on-surface-variant py-3 px-5 font-semibold">
+                    Produto
+                  </th>
+                  <th className="font-label-sm text-label-sm text-on-surface-variant py-3 px-5 font-semibold text-right">
+                    Unidades
+                  </th>
+                  <th className="font-label-sm text-label-sm text-on-surface-variant py-3 px-5 font-semibold text-right">
+                    Receita
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="font-body-md text-body-md text-sm">
+                {dashboardStats.topSelling &&
+                dashboardStats.topSelling.length > 0 ? (
+                  dashboardStats.topSelling.map((product) => (
+                    <tr
+                      key={product.productId}
+                      className="zebra-stripe border-b border-outline-variant/30 hover:bg-surface-container-low transition-colors group cursor-pointer"
+                    >
+                      <td className="py-3 px-5 flex items-center gap-3">
+                        {product.imageUrl ? (
+                          <img
+                            alt={product.name}
+                            className="w-10 h-10 rounded-md border border-outline-variant object-cover"
+                            src={product.imageUrl}
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-md border border-outline-variant bg-surface-container-high flex items-center justify-center text-on-surface-variant flex-shrink-0">
+                            <span
+                              className="material-symbols-outlined"
+                              style={{ fontSize: "20px" }}
+                            >
+                              inventory_2
+                            </span>
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-on-surface font-medium truncate w-32 md:w-auto">
+                            {product.name}
+                          </p>
+                          <p className="text-on-surface-variant text-xs">
+                            {product.category}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="py-3 px-5 text-right font-data-tabular text-on-surface">
+                        {new Intl.NumberFormat("en-US").format(
+                          product.quantity,
+                        )}
+                      </td>
+                      <td className="py-3 px-5 text-right font-data-tabular text-on-surface font-medium">
+                        {product.revenue != null
+                          ? new Intl.NumberFormat("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            }).format(product.revenue)
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="py-12 text-center text-on-surface-variant text-sm"
+                    >
+                      <span className="material-symbols-outlined block text-3xl mb-2 text-outline">
+                        inventory_2
+                      </span>
+                      Nenhum produto encontrado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       {/* Resto do conteúdo do Dashboard que exibirá os dados passados da API */}
       <div className="mt-4 bg-surface-container-lowest p-6 border border-outline-variant rounded-xl">
         <p>Receita Bruta: {dashboardStats.grossRevenue.toFixed(2)}</p>
@@ -586,6 +847,27 @@ export default function DashboardPage() {
             )
             .join(", ")}
         </p>
+
+        <div className="mt-6 border-t border-outline-variant pt-4">
+          <p className="font-semibold mb-2">
+            Evolução de Preço (Produto Destaque):
+          </p>
+          {priceEvolution && priceEvolution.length > 0 ? (
+            priceEvolution.map((evo, index) => (
+              <p key={index} className="text-sm text-on-surface-variant">
+                Data: {evo.date} | Preço:{" "}
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(evo.price)}
+              </p>
+            ))
+          ) : (
+            <p className="text-sm text-on-surface-variant">
+              Nenhum dado de evolução de preço disponível no momento.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

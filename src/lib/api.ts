@@ -132,8 +132,10 @@ export async function deleteProduct(id: string): Promise<void> {
 export interface ApiProductSalesData {
   productId: string;
   name: string;
+  imageUrl: string | null;
   category: string | null;
   quantity: number;
+  revenue: number;
 }
 
 export interface ApiDashboardStatsData {
@@ -167,6 +169,6 @@ export async function getProductPriceEvolution(
   days: number = 30,
 ): Promise<ApiProductPriceEvolution[]> {
   return apiFetch<ApiProductPriceEvolution[]>(
-    `dashboard/product-price-evolution/${productId}?days=${days}`,
+    `dashboard/price-evolution/${productId}?days=${days}`,
   );
 }
