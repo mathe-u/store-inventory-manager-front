@@ -15,6 +15,7 @@ export default function DashboardLayout({
   const isDashboardActive = pathname === "/dashboard";
   const isInventoryActive = pathname.startsWith("/inventory");
   const isSalesActive = pathname.startsWith("/sales");
+  const isCategoriesActive = pathname.startsWith("/categories");
   const isReportsActive = pathname.startsWith("/reports");
 
   return (
@@ -102,6 +103,30 @@ export default function DashboardLayout({
                 receipt_long
               </span>
               <span className="font-body-md text-body-md">Vendas</span>
+            </Link>
+          </li>
+
+          {/* Item: Categories */}
+          <li>
+            <Link
+              href="/categories"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${
+                isCategoriesActive
+                  ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
+                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+              }`}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontVariationSettings: isCategoriesActive
+                    ? "'FILL' 1"
+                    : "'FILL' 0",
+                }}
+              >
+                category
+              </span>
+              <span className="font-body-md text-body-md">Categorias</span>
             </Link>
           </li>
 

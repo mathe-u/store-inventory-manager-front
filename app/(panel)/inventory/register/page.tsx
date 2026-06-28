@@ -185,7 +185,7 @@ export default function RegisterProductPage() {
                                     onChange={(e) => setName(e.target.value)}
                                 />
                             </div>
-<div className="flex flex-col gap-1.5">
+                            <div className="flex flex-col gap-1.5">
                                 <label className="font-label-sm text-label-sm text-on-surface" htmlFor="productCategory">Categoria</label>
                                 <div className="relative">
                                     <select

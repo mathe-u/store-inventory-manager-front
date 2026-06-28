@@ -58,11 +58,9 @@ export default function InventoryPage() {
     // Filter products based on search term
     const filteredProducts = products.filter((p) => {
         const meta = parseMetadata(p.metadata);
-        const sku = typeof meta.sku === "string" ? meta.sku : "";
         const categoryName = p.category?.name ?? (typeof meta.category === "string" ? meta.category : "");
         return (
             p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
             categoryName.toLowerCase().includes(searchTerm.toLowerCase())
         );
     });
@@ -191,7 +189,6 @@ export default function InventoryPage() {
                             <thead>
                                 <tr className="bg-surface-container border-b border-outline-variant text-on-surface font-label-sm text-label-sm">
                                     <th className="p-4 font-semibold">Nome</th>
-                                    <th className="p-4 font-semibold">SKU</th>
                                     <th className="p-4 font-semibold">Categoria</th>
                                     <th className="p-4 font-semibold text-right">Custo</th>
                                     <th className="p-4 font-semibold text-right">Margem</th>
@@ -202,7 +199,6 @@ export default function InventoryPage() {
                             <tbody>
                                 {filteredProducts.map((p) => {
                                     const meta = parseMetadata(p.metadata);
-                                    const sku = typeof meta.sku === "string" ? meta.sku : "—";
                                     // Use real category relation, fallback to metadata
                                     const categoryName = p.category?.name ?? (typeof meta.category === "string" ? meta.category : "—");
                                     const categoryColor = p.category?.color ?? null;
@@ -218,7 +214,6 @@ export default function InventoryPage() {
                                             className="border-b border-outline-variant/60 hover:bg-surface-container-low transition-colors cursor-pointer"
                                         >
                                             <td className="p-4 font-medium text-on-surface">{p.name}</td>
-                                            <td className="p-4 font-data-tabular uppercase text-on-surface-variant">{sku}</td>
                                             <td className="p-4">
                                                 <span
                                                     className="px-2.5 py-0.5 rounded-full text-xs font-semibold border"
@@ -280,7 +275,6 @@ export default function InventoryPage() {
             {/* Details Side-Drawer */}
             {isDetailsOpen && selectedProduct && (() => {
                 const meta = parseMetadata(selectedProduct.metadata);
-                const sku = typeof meta.sku === "string" ? meta.sku : "—";
                 // Use real category relation, fallback to metadata
                 const categoryName = selectedProduct.category?.name ?? (typeof meta.category === "string" ? meta.category : "—");
                 const categoryColor = selectedProduct.category?.color ?? null;
@@ -320,7 +314,6 @@ export default function InventoryPage() {
                                     <h3 className="font-headline-md text-headline-md text-on-surface font-bold mt-2 leading-snug">
                                         {selectedProduct.name}
                                     </h3>
-                                    <p className="font-data-tabular text-sm text-on-surface-variant mt-1 uppercase">SKU: {sku}</p>
                                 </div>
                                 <button
                                     onClick={() => setIsDetailsOpen(false)}
