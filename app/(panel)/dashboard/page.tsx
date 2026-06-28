@@ -51,44 +51,39 @@ export default function DashboardPage() {
       setError(null);
 
       const stats = await getDashboardStats(daysSelected);
+
+      // IMPORTANTE: setDashboardStats e setIsLoading(false) são chamados juntos
+      // ANTES do próximo await (getProductPriceEvolution).
+      // Isso garante que o React faça um único render com isLoading=false e
+      // os dados do dashboard, montando os canvas no DOM antes de o
+      // useEffect([dashboardStats]) disparar. Sem isso, o useEffect dispara
+      // enquanto o spinner ainda está visível (isLoading=true), os refs dos
+      // canvas são null e os gráficos nunca são criados.
       setDashboardStats(stats);
+      setIsLoading(false);
 
       if (stats.topSelling && stats.topSelling.length > 0) {
         const topProductId = stats.topSelling[0].productId;
-        const evolution: ApiProductPriceEvolution[] = [
-          { date: "2025-01-09", price: 50 },
-          { date: "2025-01-10", price: 20 },
-          { date: "2025-01-11", price: 30 },
-          { date: "2025-01-12", price: 40 },
-          { date: "2025-01-01", price: 50 },
-          { date: "2025-01-02", price: 60 },
-          { date: "2025-01-03", price: 70 },
-          { date: "2025-01-04", price: 80 },
-          { date: "2025-01-05", price: 60 },
-          { date: "2025-01-06", price: 50 },
-        ];
-        setPriceEvolution(evolution);
 
-        // try {
-        //   const evolution = await getProductPriceEvolution(
-        //     topProductId,
-        //     daysSelected,
-        //   );
+        try {
+          const evolution = await getProductPriceEvolution(
+            topProductId,
+            daysSelected,
+          );
 
-        //   if (Array.isArray(evolution)) {
-        //     setPriceEvolution(evolution);
-        //   } else {
-        //     console.warn(
-        //       "API de evolução de preço retornou um formato inválido:",
-        //       evolution,
-        //     );
-
-        //     setPriceEvolution(null);
-        //   }
-        // } catch (evoError) {
-        //   console.error("Erro ao carregar a evolução de preço:", evoError);
-        //   setPriceEvolution(null);
-        // }
+          if (Array.isArray(evolution)) {
+            setPriceEvolution(evolution);
+          } else {
+            console.warn(
+              "API de evolução de preço retornou um formato inválido:",
+              evolution,
+            );
+            setPriceEvolution(null);
+          }
+        } catch (evoError) {
+          console.error("Erro ao carregar a evolução de preço:", evoError);
+          setPriceEvolution(null);
+        }
       } else {
         setPriceEvolution(null);
       }
@@ -97,7 +92,6 @@ export default function DashboardPage() {
       setError(
         "Falha ao carregar as estatísticas do dashboard. Por favor, tente novamente.",
       );
-    } finally {
       setIsLoading(false);
     }
   }
@@ -134,18 +128,33 @@ export default function DashboardPage() {
         return months;
       };
 
+      // Normaliza o campo `date` da API para o formato "YYYY-MM",
+      // independente de a API retornar "YYYY-MM", "YYYY-MM-DD" ou um timestamp ISO.
+      const normalizeToYearMonth = (dateStr: string): string => {
+        if (!dateStr) return "";
+        // Se já está no formato YYYY-MM (sem dia), retorna diretamente
+        if (/^\d{4}-\d{2}$/.test(dateStr)) return dateStr;
+        // Qualquer outro formato (YYYY-MM-DD, ISO timestamp): pega só os 7 primeiros chars
+        return dateStr.substring(0, 7);
+      };
+
+      console.log(
+        "[Dashboard] monthlyStats recebido da API:",
+        dashboardStats.monthlyStats,
+      );
+
       const monthsConfig = generateLast12Months();
       const labels = monthsConfig.map((month) => month.visualLabel);
 
       const revenueData = monthsConfig.map((m) => {
         const matchedStat = dashboardStats.monthlyStats?.find(
-          (s) => s.date === m.apiLabel,
+          (s) => normalizeToYearMonth(s.date) === m.apiLabel,
         );
         return matchedStat ? matchedStat.grossRevenue : 0;
       });
       const costsData = monthsConfig.map((m) => {
         const matchedStat = dashboardStats.monthlyStats?.find(
-          (s) => s.date === m.apiLabel,
+          (s) => normalizeToYearMonth(s.date) === m.apiLabel,
         );
         return matchedStat ? matchedStat.costs : 0;
       });
@@ -284,7 +293,7 @@ export default function DashboardPage() {
         return new Intl.DateTimeFormat("pt-BR", {
           day: "2-digit",
           month: "2-digit",
-        }).format(dateObj); // Retorna no formato "DD/MM"
+        }).format(dateObj);
       });
 
       const priceData = priceEvolution.map((item) => item.price);
