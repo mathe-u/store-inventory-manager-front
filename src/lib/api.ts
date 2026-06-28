@@ -170,6 +170,85 @@ export async function deleteProduct(id: string): Promise<void> {
   return apiFetch<void>(`/products/${id}`, { method: "DELETE" });
 }
 
+// ─── Sales ─── //
+
+export type SaleStatus = "COMPLETED" | "LOSS" | "RETURNED" | "PENDING";
+
+export interface ApiPaymentMethod {
+  name: string;
+  icon: string;
+}
+
+export interface ApiSale {
+  id: string;
+  productId: string;
+  product?: ApiProduct; // Reaproveitando a interface ApiProduct já existente
+  quantity: number;
+  customerName: string;
+  paymentMethod: ApiPaymentMethod;
+  finalPrice: number;
+  calculatedProfit: number;
+  status: SaleStatus;
+  createdAt: string;
+}
+
+export interface CreateSaleBody {
+  productId: string;
+  quantity: number;
+  finalPrice: number; // Preço vendido no Marketplace
+  status?: SaleStatus;
+}
+
+export interface UpdateSaleBody {
+  quantity?: number;
+  finalPrice?: number;
+  status?: SaleStatus;
+}
+
+export interface SaleMutationResponse {
+  sale: ApiSale;
+  stockRemaining: number;
+}
+
+/**
+ * Retorna o histórico completo de vendas, incluindo os dados dos produtos atrelados.
+ */
+export async function getSales(): Promise<ApiSale[]> {
+  return apiFetch<ApiSale[]>("sales/"); // Atenção: certifique-se de que o prefixo no fastify seja /sales
+}
+
+/**
+ * Cria um novo registro de venda. Deduz estoque se status for COMPLETED ou LOSS.
+ */
+export async function createSale(
+  body: CreateSaleBody,
+): Promise<SaleMutationResponse> {
+  return apiFetch<SaleMutationResponse>("sales/", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+/**
+ * Atualiza uma venda existente. O backend recalculará o estoque e a taxa de perda automaticamente.
+ */
+export async function updateSale(
+  id: string,
+  body: UpdateSaleBody,
+): Promise<SaleMutationResponse> {
+  return apiFetch<SaleMutationResponse>(`sales/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+/**
+ * Exclui uma venda e reverte suas alterações no estoque.
+ */
+export async function deleteSale(id: string): Promise<void> {
+  return apiFetch<void>(`sales/${id}`, { method: "DELETE" });
+}
+
 // ─── Dashboard ─── //
 
 export interface ApiProductSalesData {

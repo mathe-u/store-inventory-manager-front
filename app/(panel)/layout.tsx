@@ -78,7 +78,7 @@ export default function DashboardLayout({
               >
                 inventory_2
               </span>
-              <span className="font-body-md text-body-md">Estoque</span>
+              <span className="font-body-md text-body-md">Produtos</span>
             </Link>
           </li>
 
