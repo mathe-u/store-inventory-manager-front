@@ -1,16 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createProduct } from "@/src/lib/api";
+import { createProduct, getCategories, type ApiCategory } from "@/src/lib/api";
 
 export default function RegisterProductPage() {
     const router = useRouter();
 
+    // Categories from API
+    const [categories, setCategories] = useState<ApiCategory[]>([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+    useEffect(() => {
+        getCategories()
+            .then(setCategories)
+            .catch(() => setCategories([]))
+            .finally(() => setCategoriesLoading(false));
+    }, []);
+
     // Basic Info States
     const [name, setName] = useState("");
-    const [sku, setSku] = useState("");
-    const [category, setCategory] = useState("");
+    const [categoryId, setCategoryId] = useState("");
     const [costPrice, setCostPrice] = useState("0.00");
     const [stockQuantity, setStockQuantity] = useState("0");
 
@@ -69,8 +79,8 @@ export default function RegisterProductPage() {
 
     const handleSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
-        if (!name || !sku || !category) {
-            setSaveError("Por favor, preencha todas as informações básicas do produto.");
+        if (!name) {
+            setSaveError("Por favor, preencha o nome do produto.");
             return;
         }
 
@@ -85,9 +95,8 @@ export default function RegisterProductPage() {
                 taxRate: parseFloat(icmsTax) || 0,
                 desiredMargin: parseFloat(desiredMargin) || 0,
                 stockQuantity: parseInt(stockQuantity) || 0,
+                ...(categoryId ? { categoryId } : {}),
                 metadata: {
-                    sku: sku.toUpperCase(),
-                    category,
                     sellingPrice: parseFloat(sellingPrice) || 0,
                     minPrice,
                 },
@@ -176,36 +185,49 @@ export default function RegisterProductPage() {
                                     onChange={(e) => setName(e.target.value)}
                                 />
                             </div>
-                            <div className="flex flex-col gap-1.5">
-                                <label className="font-label-sm text-label-sm text-on-surface" htmlFor="productSKU">SKU</label>
-                                <input
-                                    className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT text-on-surface placeholder:text-on-surface-variant placeholder:opacity-55 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-container transition-all uppercase font-data-tabular"
-                                    id="productSKU"
-                                    placeholder="WBH-PRO-01"
-                                    type="text"
-                                    required
-                                    value={sku}
-                                    onChange={(e) => setSku(e.target.value)}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-1.5">
+<div className="flex flex-col gap-1.5">
                                 <label className="font-label-sm text-label-sm text-on-surface" htmlFor="productCategory">Categoria</label>
                                 <div className="relative">
                                     <select
-                                        className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT text-on-surface placeholder:text-on-surface-variant placeholder:opacity-55 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-container transition-all appearance-none"
+                                        className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-container transition-all appearance-none disabled:opacity-60"
                                         id="productCategory"
-                                        required
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
+                                        value={categoryId}
+                                        onChange={(e) => setCategoryId(e.target.value)}
+                                        disabled={categoriesLoading}
                                     >
-                                        <option value="" disabled>Selecione a categoria...</option>
-                                        <option value="Eletrônicos">Eletrônicos</option>
-                                        <option value="Casa">Casa</option>
-                                        <option value="Vestuário">Vestuário</option>
-                                        <option value="Outros">Outros</option>
+                                        <option value="">
+                                            {categoriesLoading ? "Carregando categorias..." : "Sem categoria"}
+                                        </option>
+                                        {categories.map((cat) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name}{cat._count?.products !== undefined ? ` (${cat._count.products})` : ""}
+                                            </option>
+                                        ))}
                                     </select>
                                     <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
                                 </div>
+                                {/* Color preview for selected category */}
+                                {categoryId && (() => {
+                                    const selected = categories.find((c) => c.id === categoryId);
+                                    return selected ? (
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span
+                                                className="w-2.5 h-2.5 rounded-full border border-black/10 flex-shrink-0"
+                                                style={{ backgroundColor: selected.color }}
+                                            />
+                                            <span
+                                                className="text-xs font-semibold px-2 py-0.5 rounded-full border"
+                                                style={{
+                                                    backgroundColor: selected.color + "22",
+                                                    color: selected.color,
+                                                    borderColor: selected.color + "44",
+                                                }}
+                                            >
+                                                {selected.name}
+                                            </span>
+                                        </div>
+                                    ) : null;
+                                })()}
                             </div>
                             <div className="flex flex-col gap-1.5">
                                 <label className="font-label-sm text-label-sm text-on-surface" htmlFor="costPrice">Preço de Custo (Aquisição)</label>

@@ -66,6 +66,49 @@ export interface ApiCategory {
   _count?: { products: number };
 }
 
+export interface CreateCategoryBody {
+  name: string;
+  description?: string;
+  color?: string; // hex: #RRGGBB
+}
+
+export interface UpdateCategoryBody {
+  name?: string;
+  description?: string;
+  color?: string;
+}
+
+export async function getCategories(): Promise<ApiCategory[]> {
+  return apiFetch<ApiCategory[]>("categories/");
+}
+
+export async function getCategoryById(id: string): Promise<ApiCategory> {
+  return apiFetch<ApiCategory>(`categories/${id}`);
+}
+
+export async function createCategory(
+  body: CreateCategoryBody,
+): Promise<ApiCategory> {
+  return apiFetch<ApiCategory>("categories/", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateCategory(
+  id: string,
+  body: UpdateCategoryBody,
+): Promise<ApiCategory> {
+  return apiFetch<ApiCategory>(`categories/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  return apiFetch<void>(`categories/${id}`, { method: "DELETE" });
+}
+
 // ─── Products ─── //
 
 export interface ApiProduct {
