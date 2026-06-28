@@ -51,7 +51,7 @@ export default function SalesPage() {
   };
 
   return (
-    <div>
+    <div className="max-w-container-max mx-auto flex flex-col gap-section-gap">
       {/* Page Header */}
       <div className="flex justify-between items-end border-b border-outline-variant pb-4 mb-8">
         <div>

@@ -411,7 +411,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-[1440px] mx-auto w-full space-y-6">
+    <div className="max-w-container-max mx-auto flex flex-col gap-section-gap">
       {/* Page Header (Trecho solicitado) */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
         <div>
