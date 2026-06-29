@@ -227,13 +227,23 @@ export default function DashboardPage() {
         marginChartInstance.current.destroy();
       }
 
+      const breakdown = dashboardStats.marginBreakdown || {
+        netProfit: 0,
+        costs: 0,
+        deliveryTax: 0,
+      };
+
       marginChartInstance.current = new Chart(marginChartRef.current, {
         type: "doughnut",
         data: {
           labels: ["Lucro Bruto", "Custos", "Entrega e Impostos"],
           datasets: [
             {
-              data: [30.7, 54.3, 15.0],
+              data: [
+                breakdown.netProfit,
+                breakdown.costs,
+                breakdown.deliveryTax,
+              ],
               backgroundColor: [
                 "#0051d5", // secondary
                 "#ba1a1a", // error
@@ -678,7 +688,10 @@ export default function DashboardPage() {
               {/* O texto interno do Donut sobreposto usando position absolute */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="font-display-lg text-display-lg text-on-surface font-data-tabular">
-                  30.7%
+                  {(
+                    (dashboardStats?.marginBreakdown?.netProfit || 0) * 100
+                  ).toFixed(1)}
+                  %
                 </span>
                 <span className="font-label-sm text-label-sm text-on-surface-variant">
                   Margem Média
@@ -693,7 +706,10 @@ export default function DashboardPage() {
                   <span className="text-on-surface">Lucro Líquido</span>
                 </div>
                 <span className="font-data-tabular text-on-surface font-medium">
-                  30.7%
+                  {(
+                    (dashboardStats?.marginBreakdown?.netProfit || 0) * 100
+                  ).toFixed(1)}
+                  %
                 </span>
               </div>
               <div className="flex justify-between items-center font-body-md text-body-md text-sm">
@@ -702,7 +718,10 @@ export default function DashboardPage() {
                   <span className="text-on-surface">Custos</span>
                 </div>
                 <span className="font-data-tabular text-on-surface font-medium">
-                  54.3%
+                  {(
+                    (dashboardStats?.marginBreakdown?.costs || 0) * 100
+                  ).toFixed(1)}
+                  %
                 </span>
               </div>
               <div className="flex justify-between items-center font-body-md text-body-md text-sm">
@@ -713,7 +732,10 @@ export default function DashboardPage() {
                   </span>
                 </div>
                 <span className="font-data-tabular text-on-surface font-medium">
-                  15.0%
+                  {(
+                    (dashboardStats?.marginBreakdown?.deliveryTax || 0) * 100
+                  ).toFixed(1)}
+                  %
                 </span>
               </div>
             </div>
@@ -841,50 +863,6 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-      {/* Resto do conteúdo do Dashboard que exibirá os dados passados da API */}
-      <div className="mt-4 bg-surface-container-lowest p-6 border border-outline-variant rounded-xl">
-        <p>Receita Bruta: {dashboardStats.grossRevenue.toFixed(2)}</p>
-        <p>Lucro Líquido: {dashboardStats.netProfit.toFixed(2)}</p>
-        <p>Total de Pedidos: {dashboardStats.totalOrders}</p>
-        <p className="mt-4">Evolução de Receita vs Custos:</p>
-        {dashboardStats.monthlyStats?.map((stat) => (
-          <div key={stat.date}>
-            <p>Data: {stat.date}</p>
-            <p>Receita Bruta: {stat.grossRevenue.toFixed(2)}</p>
-            <p>Custos: {stat.costs.toFixed(2)}</p>
-          </div>
-        ))}
-        <p className="mt-2">
-          <span className="font-semibold">Produtos Mais Vendidos:</span>{" "}
-          {dashboardStats.topSelling
-            ?.map(
-              (product) =>
-                `${product.name} - ${product.category} (${product.quantity})`,
-            )
-            .join(", ")}
-        </p>
-
-        <div className="mt-6 border-t border-outline-variant pt-4">
-          <p className="font-semibold mb-2">
-            Evolução de Preço (Produto Destaque):
-          </p>
-          {priceEvolution && priceEvolution.length > 0 ? (
-            priceEvolution.map((evo, index) => (
-              <p key={index} className="text-sm text-on-surface-variant">
-                Data: {evo.date} | Preço:{" "}
-                {new Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }).format(evo.price)}
-              </p>
-            ))
-          ) : (
-            <p className="text-sm text-on-surface-variant">
-              Nenhum dado de evolução de preço disponível no momento.
-            </p>
-          )}
         </div>
       </div>
     </div>

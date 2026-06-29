@@ -272,6 +272,11 @@ export interface ApiDashboardStatsData {
   totalOrders: number;
   totalOrdersDelta: number;
   monthlyStats: { date: string; grossRevenue: number; costs: number }[];
+  marginBreakdown: {
+    netProfit: number;
+    costs: number;
+    deliveryTax: number;
+  };
   topSelling: ApiProductSalesData[];
 }
 
