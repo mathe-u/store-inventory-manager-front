@@ -135,12 +135,14 @@ export default function CategoriesPage() {
       const data = await getCategories();
       setCategories(data);
     } catch (err) {
+      console.error("Failed to load categories:", err);
       setLoadError(err instanceof Error ? err.message : "Falha ao carregar categorias.");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadCategories(); }, [loadCategories]);
 
   const filtered = categories.filter(
@@ -169,6 +171,7 @@ export default function CategoriesPage() {
       setCategories((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
       setIsCreateOpen(false);
     } catch (err) {
+      console.error("Failed to create category:", err);
       setCreateError(err instanceof Error ? err.message : "Erro ao criar categoria.");
     } finally {
       setIsSaving(false);
@@ -200,6 +203,7 @@ export default function CategoriesPage() {
       );
       setEditTarget(null);
     } catch (err) {
+      console.error("Failed to update category:", err);
       setEditError(err instanceof Error ? err.message : "Erro ao atualizar.");
     } finally {
       setIsEditing(false);
@@ -214,6 +218,7 @@ export default function CategoriesPage() {
       setCategories((prev) => prev.filter((c) => c.id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch (err) {
+      console.error("Failed to delete category:", err);
       alert(err instanceof Error ? err.message : "Erro ao remover.");
     } finally {
       setIsDeleting(false);

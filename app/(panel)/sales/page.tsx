@@ -21,6 +21,7 @@ export default function SalesPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadSales();
   }, []);
 
@@ -93,7 +94,7 @@ export default function SalesPage() {
       </div>
 
       {/* ─── Metrics Summary ─── */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <span className="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
@@ -115,7 +116,7 @@ export default function SalesPage() {
             </span>
           </div>
         </div>
-        {/* Units Sold */}
+        Units Sold
         <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <span className="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
@@ -137,7 +138,7 @@ export default function SalesPage() {
             </span>
           </div>
         </div>
-        {/* Avg Order Value */}
+        Avg Order Value
         <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <span className="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
@@ -159,7 +160,7 @@ export default function SalesPage() {
             </span>
           </div>
         </div>
-        {/* Pending Payouts */}
+        Pending Payouts
         <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <span className="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
@@ -178,7 +179,7 @@ export default function SalesPage() {
             </span>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* ─── Filters ─── */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-8 flex flex-wrap items-center gap-4 shadow-sm">
@@ -225,48 +226,68 @@ export default function SalesPage() {
 
       {/* ─── Table ─── */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden mb-6">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse table-auto">
-            <thead className="bg-surface text-on-surface-variant border-b border-outline-variant">
-              <tr>
-                <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
-                  Product
-                </th>
-                <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
-                  Cliente
-                </th>
-                <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
-                  Forma de pagamento
-                </th>
-                <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-right">
-                  Receita
-                </th>
-                <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-right">
-                  Lucro Líquido
-                </th>
-                <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-center">
-                  Status
-                </th>
-                <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-right">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant">
-              {isLoading ? (
+        {isLoading ? (
+          <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+            <span className="material-symbols-outlined text-secondary text-[48px] animate-spin">
+              progress_activity
+            </span>
+            <p className="font-body-md text-on-surface-variant">
+              Carregando transações...
+            </p>
+          </div>
+        ) : sales.length === 0 ? (
+          <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+            <span className="material-symbols-outlined text-outline-variant text-[48px]">
+              payments
+            </span>
+            <p className="font-headline-md text-on-surface font-semibold">
+              Nenhuma venda encontrada
+            </p>
+            <p className="font-body-md text-on-surface-variant max-w-sm">
+              Nenhuma venda cadastrada ainda. Comece registrando sua primeira
+              venda.
+            </p>
+            <Link
+              href="/sales/register"
+              className="mt-2 px-4 py-2.5 rounded-DEFAULT bg-secondary text-on-secondary font-label-sm text-label-sm hover:bg-opacity-90 transition-colors flex items-center gap-2 shadow-sm font-semibold cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              Registrar Venda
+            </Link>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse table-auto">
+              <thead className="bg-surface text-on-surface-variant border-b border-outline-variant">
                 <tr>
-                  <td
-                    colSpan={8}
-                    className="px-6 py-8 text-center text-on-surface-variant"
-                  >
-                    Carregando transações...
-                  </td>
+                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
+                    Product
+                  </th>
+                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
+                    Cliente
+                  </th>
+                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
+                    Forma de pagamento
+                  </th>
+                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-right">
+                    Receita
+                  </th>
+                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-right">
+                    Lucro Líquido
+                  </th>
+                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-center">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-right">
+                    Ações
+                  </th>
                 </tr>
-              ) : (
-                sales.map((sale, index) => (
+              </thead>
+              <tbody className="divide-y divide-outline-variant">
+                {sales.map((sale, index) => (
                   <tr
                     key={sale.id}
                     className={`${index % 2 !== 0 ? "bg-surface" : "bg-transparent"} hover:bg-surface-container-low hover:border-l-4 hover:border-l-secondary transition-all`}
@@ -330,46 +351,50 @@ export default function SalesPage() {
                       </button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* ─── Pagination ─── */}
-      <div className="flex items-center justify-between bg-surface-container-lowest border border-outline-variant rounded-xl px-6 py-4 shadow-sm">
-        <div className="text-on-surface-variant text-body-md">
-          Mostrando{" "}
-          <span className="font-bold text-on-surface">1 - {sales.length}</span>{" "}
-          de <span className="font-bold text-on-surface">{sales.length}</span>{" "}
-          transações
+      {sales.length > 0 && (
+        <div className="flex items-center justify-between bg-surface-container-lowest border border-outline-variant rounded-xl px-6 py-4 shadow-sm">
+          <div className="text-on-surface-variant text-body-md">
+            Mostrando{" "}
+            <span className="font-bold text-on-surface">
+              1 - {sales.length}
+            </span>{" "}
+            de <span className="font-bold text-on-surface">{sales.length}</span>{" "}
+            transações
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low disabled:opacity-30 transition-all active:scale-95"
+              disabled
+            >
+              <span className="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button className="w-10 h-10 rounded-lg bg-secondary text-on-secondary font-bold active:scale-95 transition-all">
+              1
+            </button>
+            <button className="w-10 h-10 rounded-lg hover:bg-surface-container-low text-on-surface font-medium transition-all active:scale-95">
+              2
+            </button>
+            <button className="w-10 h-10 rounded-lg hover:bg-surface-container-low text-on-surface font-medium transition-all active:scale-95">
+              3
+            </button>
+            <span className="text-on-surface-variant px-2">...</span>
+            <button className="w-10 h-10 rounded-lg hover:bg-surface-container-low text-on-surface font-medium transition-all active:scale-95">
+              312
+            </button>
+            <button className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all active:scale-95">
+              <span className="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low disabled:opacity-30 transition-all active:scale-95"
-            disabled
-          >
-            <span className="material-symbols-outlined">chevron_left</span>
-          </button>
-          <button className="w-10 h-10 rounded-lg bg-secondary text-on-secondary font-bold active:scale-95 transition-all">
-            1
-          </button>
-          <button className="w-10 h-10 rounded-lg hover:bg-surface-container-low text-on-surface font-medium transition-all active:scale-95">
-            2
-          </button>
-          <button className="w-10 h-10 rounded-lg hover:bg-surface-container-low text-on-surface font-medium transition-all active:scale-95">
-            3
-          </button>
-          <span className="text-on-surface-variant px-2">...</span>
-          <button className="w-10 h-10 rounded-lg hover:bg-surface-container-low text-on-surface font-medium transition-all active:scale-95">
-            312
-          </button>
-          <button className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all active:scale-95">
-            <span className="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
