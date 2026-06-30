@@ -137,7 +137,7 @@ export interface CreateProductBody {
   name: string;
   stockQuantity?: number;
   minStockAlert?: number;
-  metadata?: Record<string, unknown>;
+  metadata: Record<string, unknown>;
   acquisitionCost: number;
   shippingCost: number;
   taxRate: number; // decimal: 0.18 = 18%
@@ -160,7 +160,7 @@ export async function getProductById(id: string): Promise<ApiProductDetail> {
 export async function createProduct(
   body: CreateProductBody,
 ): Promise<ApiProduct> {
-  return apiFetch<ApiProduct>("/products/", {
+  return apiFetch<ApiProduct>("products/", {
     method: "POST",
     body: JSON.stringify(body),
   });
