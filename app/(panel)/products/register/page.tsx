@@ -164,7 +164,7 @@ export default function RegisterProductPage() {
             <span className="material-symbols-outlined text-[16px]">
               inventory_2
             </span>
-            <span>Inventário</span>
+            <span>Produtos</span>
             <span className="material-symbols-outlined text-[14px]">
               chevron_right
             </span>
@@ -177,7 +177,7 @@ export default function RegisterProductPage() {
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={() => router.push("/inventory")}
+            onClick={() => router.push("/products")}
             disabled={isSaving}
             className="px-4 py-2 rounded-DEFAULT border border-outline text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-lowest transition-colors cursor-pointer disabled:opacity-60"
           >
