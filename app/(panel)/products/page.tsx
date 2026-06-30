@@ -21,13 +21,18 @@ function deriveSellingPrice(product: ApiProduct): number {
 }
 
 function deriveNetProfit(product: ApiProduct, sellingPrice: number): number {
-  const taxAmount = sellingPrice * (product.taxRate / 100);
-  const totalCosts =
+  // Replicates PricingService logic:
+  // ICMS is calculated gross-up on (acquisitionCost + shippingCost), not on sellingPrice
+  const taxRate = product.taxRate; // decimal
+  const customsValue = product.acquisitionCost + product.shippingCost;
+  const baseICMS = taxRate < 1 ? customsValue / (1 - taxRate) : customsValue;
+  const icmsTax = taxRate < 1 ? baseICMS * taxRate : 0;
+  const totalBaseCost =
     product.acquisitionCost +
     product.shippingCost +
-    taxAmount +
+    icmsTax +
     product.directCosts;
-  return sellingPrice - totalCosts;
+  return sellingPrice - totalBaseCost;
 }
 
 export default function ProductsPage() {
@@ -322,39 +327,44 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* Details Side-Drawer */}
       {isDetailsOpen &&
         selectedProduct &&
         (() => {
           const meta = parseMetadata(selectedProduct.metadata);
-          // Use real category relation, fallback to metadata
+          // Category
           const categoryName =
             selectedProduct.category?.name ??
             (typeof meta.category === "string" ? meta.category : "—");
           const categoryColor = selectedProduct.category?.color ?? null;
+
+          // Selling price from metadata (saved at register time)
           const sellingPrice = deriveSellingPrice(selectedProduct);
+          // Suggested price (optimal price computed by the API at register time)
+          const suggestedPrice =
+            typeof meta.suggestedPrice === "number" ? meta.suggestedPrice : null;
+
+          // Financial calculations matching PricingService logic
           const netProfit = deriveNetProfit(selectedProduct, sellingPrice);
-          // taxRate stored as decimal (0.18 = 18%)
-          const taxRatePct =
-            selectedProduct.taxRate < 1
-              ? selectedProduct.taxRate * 100
-              : selectedProduct.taxRate;
-          const taxAmount =
-            sellingPrice *
-            (selectedProduct.taxRate < 1
-              ? selectedProduct.taxRate
-              : selectedProduct.taxRate / 100);
+
+          // taxRate stored as decimal (0.20 = 20%)
+          const taxRatePct = selectedProduct.taxRate * 100;
+          const customsValue = selectedProduct.acquisitionCost + selectedProduct.shippingCost;
+          const baseICMS = selectedProduct.taxRate < 1
+            ? customsValue / (1 - selectedProduct.taxRate)
+            : customsValue;
+          const icmsTaxAmount = selectedProduct.taxRate < 1 ? baseICMS * selectedProduct.taxRate : 0;
+
           // desiredMargin stored as decimal (0.30 = 30%)
-          const drawerMarginPct =
-            selectedProduct.desiredMargin < 1
-              ? selectedProduct.desiredMargin * 100
-              : selectedProduct.desiredMargin;
-          const markup =
-            selectedProduct.acquisitionCost > 0
-              ? ((sellingPrice - selectedProduct.acquisitionCost) /
-                  selectedProduct.acquisitionCost) *
-                100
-              : 0;
+          const drawerMarginPct = selectedProduct.desiredMargin * 100;
+          const lossIndexPct = selectedProduct.lossIndex * 100;
+
+          // Markup: totalBaseCost multiplier (consistent with PricingService)
+          const totalBaseCost =
+            selectedProduct.acquisitionCost +
+            selectedProduct.shippingCost +
+            icmsTaxAmount +
+            selectedProduct.directCosts;
+          const markup = totalBaseCost > 0 ? (sellingPrice / totalBaseCost) * 100 : 0;
           const contributionMargin =
             sellingPrice > 0 ? (netProfit / sellingPrice) * 100 : 0;
 
@@ -365,6 +375,7 @@ export default function ProductsPage() {
                 className="fixed inset-0 bg-black/35 backdrop-blur-sm z-50 transition-opacity duration-200"
               />
               <div className="fixed right-0 top-0 h-full w-[460px] max-w-[90%] bg-surface-container-lowest border-l border-outline-variant shadow-2xl z-50 flex flex-col p-6 overflow-y-auto animate-in slide-in-from-right duration-300">
+                {/* Header */}
                 <div className="flex justify-between items-start border-b border-outline-variant pb-4 mb-6">
                   <div>
                     <span
@@ -393,130 +404,162 @@ export default function ProductsPage() {
                     onClick={() => setIsDetailsOpen(false)}
                     className="p-1.5 rounded-full hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[24px]">
-                      close
-                    </span>
+                    <span className="material-symbols-outlined text-[24px]">close</span>
                   </button>
                 </div>
 
                 <div className="flex flex-col gap-6 flex-grow">
+                  {/* Primary metric */}
                   <div className="bg-primary-container rounded-xl p-5 border border-primary-fixed-dim flex flex-col items-center justify-center text-center">
                     <span className="font-label-sm text-label-sm text-on-primary-container mb-1">
-                      Unit Net Profit
+                      Lucro Líquido por Unidade
                     </span>
                     <div className="flex items-baseline gap-1">
-                      <span className="font-data-tabular text-primary-fixed-dim text-lg">
-                        R$
-                      </span>
+                      <span className="font-data-tabular text-primary-fixed-dim text-lg">R$</span>
                       <span
-                        className={`font-data-tabular text-3xl font-bold ${netProfit > 0 ? "text-tertiary-fixed" : "text-error"}`}
+                        className={`font-data-tabular text-3xl font-bold ${
+                          netProfit > 0 ? "text-tertiary-fixed" : "text-error"
+                        }`}
                       >
                         {netProfit.toFixed(2)}
                       </span>
                     </div>
                     <span
-                      className={`mt-2.5 px-3 py-0.5 rounded-full text-xs font-bold ${netProfit > 0 ? "bg-tertiary-container text-on-tertiary-container" : "bg-error-container text-on-error-container"}`}
+                      className={`mt-2.5 px-3 py-0.5 rounded-full text-xs font-bold ${
+                        netProfit > 0
+                          ? "bg-tertiary-container text-on-tertiary-container"
+                          : "bg-error-container text-on-error-container"
+                      }`}
                     >
-                      {netProfit > 0 ? "PROFITABLE" : "LOSS WARNING"}
+                      {netProfit > 0 ? "LUCRATIVO" : "ATENÇÃO: PREJUÍZO"}
                     </span>
                   </div>
 
+                  {/* Pricing metrics grid */}
                   <div>
                     <h4 className="font-label-sm text-label-sm text-on-surface font-semibold uppercase tracking-wider mb-3">
-                      Pricing Metrics
+                      Indicadores de Precificação
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-surface-container p-3.5 rounded-lg border border-outline-variant/40">
-                        <span className="text-xs text-on-surface-variant block mb-1">
-                          Markup
-                        </span>
+                        <span className="text-xs text-on-surface-variant block mb-1">Markup</span>
                         <span className="font-data-tabular text-lg font-bold text-on-surface">
                           {markup.toFixed(1)}%
                         </span>
                       </div>
                       <div className="bg-surface-container p-3.5 rounded-lg border border-outline-variant/40">
-                        <span className="text-xs text-on-surface-variant block mb-1">
-                          Contribution Margin
-                        </span>
+                        <span className="text-xs text-on-surface-variant block mb-1">Margem de Contribuição</span>
                         <span className="font-data-tabular text-lg font-bold text-on-surface">
                           {contributionMargin.toFixed(1)}%
                         </span>
                       </div>
                       <div className="bg-surface-container p-3.5 rounded-lg border border-outline-variant/40">
-                        <span className="text-xs text-on-surface-variant block mb-1">
-                          Stock
-                        </span>
-                        <span className="font-data-tabular text-lg font-bold text-on-surface">
-                          {selectedProduct.stockQuantity} units
+                        <span className="text-xs text-on-surface-variant block mb-1">Estoque</span>
+                        <span
+                          className={`font-data-tabular text-lg font-bold ${
+                            selectedProduct.stockQuantity <= selectedProduct.minStockAlert
+                              ? "text-error"
+                              : "text-on-surface"
+                          }`}
+                        >
+                          {selectedProduct.stockQuantity}{" "}
+                          <span className="text-xs font-normal text-on-surface-variant">un.</span>
                         </span>
                       </div>
                       <div className="bg-surface-container p-3.5 rounded-lg border border-outline-variant/40">
-                        <span className="text-xs text-on-surface-variant block mb-1">
-                          Loss Index
-                        </span>
-                        <span className="font-data-tabular text-lg font-bold text-on-surface">
-                          {(selectedProduct.lossIndex * 100).toFixed(1)}%
+                        <span className="text-xs text-on-surface-variant block mb-1">Índice de Perda</span>
+                        <span
+                          className={`font-data-tabular text-lg font-bold ${
+                            lossIndexPct > 10 ? "text-error" : "text-on-surface"
+                          }`}
+                        >
+                          {lossIndexPct.toFixed(1)}%
                         </span>
                       </div>
                     </div>
                   </div>
 
+                  {/* Prices */}
                   <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/50 flex flex-col gap-3">
                     <h4 className="font-label-sm text-label-sm text-on-surface font-semibold uppercase tracking-wider border-b border-outline-variant/40 pb-2">
-                      Cost Breakdown
+                      Preços
                     </h4>
                     <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                      <span>Acquisition Cost</span>
+                      <span>Preço de Venda (cadastrado)</span>
                       <span className="font-data-tabular font-medium text-on-surface">
-                        R$ {selectedProduct.acquisitionCost.toFixed(2)}
+                        R$ {sellingPrice.toFixed(2)}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                      <span>Shipping Cost</span>
-                      <span className="font-data-tabular font-medium text-on-surface">
-                        R$ {selectedProduct.shippingCost.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                      <span>
-                        Tax / Marketplace Fee ({taxRatePct.toFixed(1)}%)
-                      </span>
-                      <span className="font-data-tabular font-medium text-on-surface">
-                        R$ {taxAmount.toFixed(2)}
-                      </span>
-                    </div>
-                    {selectedProduct.directCosts > 0 && (
+                    {suggestedPrice !== null && (
                       <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                        <span>Direct Costs</span>
-                        <span className="font-data-tabular font-medium text-on-surface">
-                          R$ {selectedProduct.directCosts.toFixed(2)}
+                        <span>Preço Sugerido (calculado)</span>
+                        <span className="font-data-tabular font-medium text-secondary">
+                          R$ {suggestedPrice.toFixed(2)}
                         </span>
                       </div>
                     )}
-                    <div className="flex justify-between items-center text-body-md text-on-surface-variant border-t border-outline-variant/40 pt-2 font-medium">
-                      <span className="text-on-surface">Desired Margin</span>
+                    <div className="flex justify-between items-center text-body-md text-on-surface-variant border-t border-outline-variant/40 pt-2">
+                      <span>Margem Desejada</span>
                       <span className="font-data-tabular font-bold text-secondary text-lg">
                         {drawerMarginPct.toFixed(1)}%
                       </span>
                     </div>
                   </div>
+
+                  {/* Cost breakdown */}
+                  <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/50 flex flex-col gap-3">
+                    <h4 className="font-label-sm text-label-sm text-on-surface font-semibold uppercase tracking-wider border-b border-outline-variant/40 pb-2">
+                      Composição de Custos
+                    </h4>
+                    <div className="flex justify-between items-center text-body-md text-on-surface-variant">
+                      <span>Custo de Aquisição</span>
+                      <span className="font-data-tabular font-medium text-on-surface">
+                        R$ {selectedProduct.acquisitionCost.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-body-md text-on-surface-variant">
+                      <span>Frete / Envio</span>
+                      <span className="font-data-tabular font-medium text-on-surface">
+                        R$ {selectedProduct.shippingCost.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-body-md text-on-surface-variant">
+                      <span>ICMS / Marketplace ({taxRatePct.toFixed(1)}%)</span>
+                      <span className="font-data-tabular font-medium text-on-surface">
+                        R$ {icmsTaxAmount.toFixed(2)}
+                      </span>
+                    </div>
+                    {selectedProduct.directCosts > 0 && (
+                      <div className="flex justify-between items-center text-body-md text-on-surface-variant">
+                        <span>Custos Diretos</span>
+                        <span className="font-data-tabular font-medium text-on-surface">
+                          R$ {selectedProduct.directCosts.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center text-body-md border-t border-outline-variant/40 pt-2 font-medium">
+                      <span className="text-on-surface">Custo Total Base</span>
+                      <span className="font-data-tabular font-bold text-on-surface text-lg">
+                        R$ {totalBaseCost.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
+                {/* Footer actions */}
                 <div className="border-t border-outline-variant pt-4 mt-6 flex gap-3">
                   <button
                     onClick={(e) => handleDeleteClick(selectedProduct, e)}
                     className="flex-1 py-2.5 rounded-lg border border-error text-error hover:bg-error-container hover:text-on-error-container transition-colors font-label-sm text-label-sm font-semibold cursor-pointer flex items-center justify-center gap-2"
                   >
-                    <span className="material-symbols-outlined text-[18px]">
-                      delete
-                    </span>
-                    Delete Product
+                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                    Remover Produto
                   </button>
                   <button
                     onClick={() => setIsDetailsOpen(false)}
                     className="flex-1 py-2.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors font-label-sm text-label-sm font-semibold cursor-pointer"
                   >
-                    Close Details
+                    Fechar
                   </button>
                 </div>
               </div>
