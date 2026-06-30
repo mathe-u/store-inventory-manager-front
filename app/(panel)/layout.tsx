@@ -13,7 +13,7 @@ export default function DashboardLayout({
 
   // Verificadores de rota ativa (ajustados para cada página)
   const isDashboardActive = pathname === "/dashboard";
-  const isInventoryActive = pathname.startsWith("/inventory");
+  const isProductsActive = pathname.startsWith("/products");
   const isSalesActive = pathname.startsWith("/sales");
   const isCategoriesActive = pathname.startsWith("/categories");
   const isReportsActive = pathname.startsWith("/reports");
@@ -61,9 +61,9 @@ export default function DashboardLayout({
           {/* Item: Inventory */}
           <li>
             <Link
-              href="/inventory"
+              href="/products"
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${
-                isInventoryActive
+                isProductsActive
                   ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
                   : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
               }`}
@@ -71,7 +71,7 @@ export default function DashboardLayout({
               <span
                 className="material-symbols-outlined"
                 style={{
-                  fontVariationSettings: isInventoryActive
+                  fontVariationSettings: isProductsActive
                     ? "'FILL' 1"
                     : "'FILL' 0",
                 }}

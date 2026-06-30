@@ -28,7 +28,9 @@ export default function LoginPage() {
       setSuccess(true);
       setTimeout(() => router.push("/dashboard"), 800);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid email or password.");
+      setError(
+        err instanceof Error ? err.message : "Invalid email or password.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -42,36 +44,57 @@ export default function LoginPage() {
         <div className="mb-12 flex flex-col gap-2">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-on-secondary shadow-sm">
-              <span className="material-symbols-outlined text-[24px]">storefront</span>
+              <span className="material-symbols-outlined text-[24px]">
+                storefront
+              </span>
             </div>
-            <h1 className="font-headline-md text-headline-md text-on-surface tracking-tight">MarketMaster</h1>
+            <h1 className="font-headline-md text-headline-md text-on-surface tracking-tight">
+              Market
+            </h1>
           </div>
-          <h2 className="font-display-lg text-display-lg text-on-surface hidden md:block">Welcome back</h2>
-          <h2 className="font-display-lg-mobile text-display-lg-mobile text-on-surface block md:hidden">Welcome back</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant">Enter your credentials to access the power seller suite.</p>
+          <h2 className="font-display-lg text-display-lg text-on-surface hidden md:block">
+            Bem-vindo(a) de volta
+          </h2>
+          <h2 className="font-display-lg-mobile text-display-lg-mobile text-on-surface block md:hidden">
+            Bem-vindo(a) de volta
+          </h2>
+          <p className="font-body-md text-body-md text-on-surface-variant">
+            Insira suas credenciais para acessar o sistema.
+          </p>
         </div>
 
         {/* Form */}
         <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
           {error && (
             <div className="p-3.5 rounded-lg bg-error-container text-on-error-container border border-error/20 font-body-md text-body-md flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-              <span className="material-symbols-outlined text-[20px] text-error">error</span>
+              <span className="material-symbols-outlined text-[20px] text-error">
+                error
+              </span>
               {error}
             </div>
           )}
 
           {success && (
             <div className="p-3.5 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary-fixed-dim/20 font-body-md text-body-md flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-              <span className="material-symbols-outlined text-[20px]">check_circle</span>
-              Logged in successfully! Redirecting...
+              <span className="material-symbols-outlined text-[20px]">
+                check_circle
+              </span>
+              Logado com sucesso! Redirecionando...
             </div>
           )}
 
           {/* Email Input */}
           <div className="flex flex-col gap-2">
-            <label className="font-label-sm text-label-sm text-on-surface" htmlFor="email">Email address</label>
+            <label
+              className="font-label-sm text-label-sm text-on-surface"
+              htmlFor="email"
+            >
+              Email
+            </label>
             <div className="relative flex items-center group">
-              <span className="material-symbols-outlined absolute left-3 text-on-surface-variant group-focus-within:text-secondary transition-colors text-[20px]">mail</span>
+              <span className="material-symbols-outlined absolute left-3 text-on-surface-variant group-focus-within:text-secondary transition-colors text-[20px]">
+                mail
+              </span>
               <input
                 className="w-full pl-10 pr-4 py-2.5 bg-surface-bright border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all hover:border-outline"
                 id="email"
@@ -87,9 +110,16 @@ export default function LoginPage() {
 
           {/* Password Input */}
           <div className="flex flex-col gap-2">
-            <label className="font-label-sm text-label-sm text-on-surface" htmlFor="password">Password</label>
+            <label
+              className="font-label-sm text-label-sm text-on-surface"
+              htmlFor="password"
+            >
+              Senha
+            </label>
             <div className="relative flex items-center group">
-              <span className="material-symbols-outlined absolute left-3 text-on-surface-variant group-focus-within:text-secondary transition-colors text-[20px]">lock</span>
+              <span className="material-symbols-outlined absolute left-3 text-on-surface-variant group-focus-within:text-secondary transition-colors text-[20px]">
+                lock
+              </span>
               <input
                 className="w-full pl-10 pr-10 py-2.5 bg-surface-bright border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all hover:border-outline"
                 id="password"
@@ -112,7 +142,9 @@ export default function LoginPage() {
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
               />
-              <span className="font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors select-none">Remember me</span>
+              <span className="font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors select-none">
+                Lembrar-me
+              </span>
             </label>
             <a
               className="font-label-sm text-label-sm text-secondary hover:text-on-secondary-fixed-variant transition-colors underline-offset-2 hover:underline"
@@ -122,7 +154,7 @@ export default function LoginPage() {
                 alert("Password reset feature coming soon!");
               }}
             >
-              Forgot password?
+              Esqueceu sua senha?
             </a>
           </div>
 
@@ -134,16 +166,34 @@ export default function LoginPage() {
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
-                Signing In...
+                Entrando...
               </span>
             ) : (
               <>
-                Sign In
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                Entrar
+                <span className="material-symbols-outlined text-[18px]">
+                  arrow_forward
+                </span>
               </>
             )}
           </button>
@@ -152,16 +202,18 @@ export default function LoginPage() {
         {/* Footer / Meta Links */}
         <div className="mt-12 text-center">
           <p className="font-body-md text-body-md text-on-surface-variant">
-            {"Don't have an account? "}
+            {"Não tem uma conta? "}
             <a
               className="font-label-sm text-label-sm text-secondary hover:text-on-secondary-fixed-variant transition-colors hover:underline"
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                alert("Please request access from your team administrator.");
+                alert(
+                  "Por favor, solicite acesso ao administrador da sua equipe.",
+                );
               }}
             >
-              Request access
+              Solicitar acesso
             </a>
           </p>
         </div>
@@ -185,18 +237,28 @@ export default function LoginPage() {
         {/* Floating Glassmorphism Branding Card */}
         <div className="relative z-10 max-w-md w-full bg-surface-container-lowest/10 backdrop-blur-md border border-white/10 rounded-2xl p-8 shadow-2xl flex flex-col gap-6 transform translate-y-[-10%]">
           <div className="flex items-center gap-3 text-on-secondary">
-            <span className="material-symbols-outlined text-[32px]">insights</span>
+            <span className="material-symbols-outlined text-[32px]">
+              insights
+            </span>
           </div>
           <blockquote className="font-headline-md text-headline-md text-on-secondary leading-snug">
-            {"\"MarketMaster's ledger clarity has completely transformed our enterprise reconciliation speed.\""}
+            {
+              '"A clareza do Market transformou completamente a velocidade de reconciliação da nossa empresa."'
+            }
           </blockquote>
           <div className="flex items-center gap-4 mt-2">
             <div className="w-10 h-10 rounded-full bg-surface-container-lowest/20 flex items-center justify-center border border-white/20">
-              <span className="material-symbols-outlined text-on-secondary text-[20px]">person</span>
+              <span className="material-symbols-outlined text-on-secondary text-[20px]">
+                person
+              </span>
             </div>
             <div className="flex flex-col">
-              <span className="font-label-sm text-label-sm text-on-secondary">Sarah Jenkins</span>
-              <span className="font-body-md text-body-md text-surface-dim opacity-80 text-[12px]">Director of Operations, Nexus Retail</span>
+              <span className="font-label-sm text-label-sm text-on-secondary">
+                Sarah Jenkins
+              </span>
+              <span className="font-body-md text-body-md text-surface-dim opacity-80 text-[12px]">
+                Director of Operations, Nexus Retail
+              </span>
             </div>
           </div>
         </div>
