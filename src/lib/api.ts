@@ -170,6 +170,42 @@ export async function deleteProduct(id: string): Promise<void> {
   return apiFetch<void>(`/products/${id}`, { method: "DELETE" });
 }
 
+// ─── Pricing ─── //
+
+export interface PricingInput {
+  acquisitionCost: number;
+  shippingCost?: number;
+  taxRate: number;         // decimal: 0.20 = 20%
+  desiredMargin: number;   // decimal: 0.30 = 30%
+  sellingPrice?: number;   // opcional — para calcular indicadores sobre o preço informado
+  directCosts?: number;
+  timeSpent?: number;
+  lossIndex?: number;
+}
+
+export interface PricingAtSellingPrice {
+  markup: number;
+  contributionMargin: number;
+  netProfit: number;
+}
+
+export interface PricingResult {
+  totalBaseCost: number;
+  suggestedPrice: number;
+  markup: number;
+  netProfit: number;
+  atSellingPrice?: PricingAtSellingPrice; // presente se sellingPrice foi informado
+}
+
+export async function calculatePricing(
+  body: PricingInput,
+): Promise<PricingResult> {
+  return apiFetch<PricingResult>("pricing/calculate", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
 // ─── Sales ─── //
 
 export type SaleStatus = "COMPLETED" | "LOSS" | "RETURNED" | "PENDING";

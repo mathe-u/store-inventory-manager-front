@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createProduct, getCategories, type ApiCategory } from "@/src/lib/api";
+import {
+  createProduct,
+  getCategories,
+  calculatePricing,
+  type ApiCategory,
+  type PricingResult,
+} from "@/src/lib/api";
 
 export default function RegisterProductPage() {
   const router = useRouter();
@@ -33,27 +39,55 @@ export default function RegisterProductPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
-  // Perform Calculations directly in render
-  const cost = parseFloat(costPrice) || 0;
-  const price = parseFloat(sellingPrice) || 0;
-  const shipping = parseFloat(shippingCost) || 0;
-  const taxRate = (parseFloat(icmsTax) || 0) / 100;
-  const targetMarginRate = (parseFloat(desiredMargin) || 0) / 100;
+  // Pricing API state
+  const [pricingResult, setPricingResult] = useState<PricingResult | null>(
+    null,
+  );
+  const [pricingLoading, setPricingLoading] = useState(false);
+  const [pricingError, setPricingError] = useState("");
 
-  const customsValue = cost + shipping;
-  const baseICMS = customsValue / (1 - taxRate);
-  const icmsTaxAmount = baseICMS * taxRate;
-  const totalCosts = cost + shipping + icmsTaxAmount;
-  const netProfit = price - totalCosts;
+  // Debounced call to the pricing endpoint whenever inputs change
+  useEffect(() => {
+    const acquisitionCost = parseFloat(costPrice) || 0;
+    const shippingCostVal = parseFloat(shippingCost) || 0;
+    const taxRateVal = (parseFloat(icmsTax) || 0) / 100;
+    const desiredMarginVal = (parseFloat(desiredMargin) || 0) / 100;
+    const sellingPriceVal = parseFloat(sellingPrice) || 0;
 
-  const markup = cost > 0 ? ((price - cost) / cost) * 100 : 0;
-  const contributionMargin = price > 0 ? (netProfit / price) * 100 : 0;
+    setPricingLoading(true);
+    setPricingError("");
 
-  let minPrice = 0;
-  const denominator = 1 - taxRate - targetMarginRate;
-  if (denominator > 0) {
-    minPrice = (cost + shipping) / denominator;
-  }
+    const timer = setTimeout(() => {
+      calculatePricing({
+        acquisitionCost,
+        shippingCost: shippingCostVal,
+        taxRate: taxRateVal,
+        desiredMargin: desiredMarginVal,
+        sellingPrice: sellingPriceVal,
+      })
+        .then((result) => {
+          setPricingResult(result);
+          setPricingLoading(false);
+        })
+        .catch((err) => {
+          setPricingError(
+            err instanceof Error
+              ? err.message
+              : "Não foi possível calcular a precificação.",
+          );
+          setPricingLoading(false);
+        });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [costPrice, shippingCost, icmsTax, desiredMargin, sellingPrice]);
+
+  // Derived values for display — always from API result
+  const netProfit = pricingResult?.atSellingPrice?.netProfit ?? null;
+  const markup = pricingResult?.atSellingPrice?.markup ?? null;
+  const contributionMargin =
+    pricingResult?.atSellingPrice?.contributionMargin ?? null;
+  const suggestedPrice = pricingResult?.suggestedPrice ?? null;
 
   const getStatusStyling = (profit: number) => {
     if (profit > 0) {
@@ -83,7 +117,7 @@ export default function RegisterProductPage() {
     }
   };
 
-  const status = getStatusStyling(netProfit);
+  const status = getStatusStyling(netProfit ?? 0);
 
   const handleSave = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -106,10 +140,10 @@ export default function RegisterProductPage() {
         ...(categoryId ? { categoryId } : {}),
         metadata: {
           sellingPrice: parseFloat(sellingPrice) || 0,
-          minPrice,
+          suggestedPrice: pricingResult?.suggestedPrice ?? 0,
         },
       });
-      router.push("/inventory");
+      router.push("/products");
     } catch (err) {
       setSaveError(
         err instanceof Error ? err.message : "Falha ao salvar produto.",
@@ -118,8 +152,8 @@ export default function RegisterProductPage() {
     }
   };
 
-  // Generate a composite key for reactive re-render flashes of output cells
-  const flashKey = `${cost}-${price}-${shipping}-${icmsTax}-${desiredMargin}`;
+  // Key for flash animation on result panel
+  const flashKey = `${costPrice}-${sellingPrice}-${shippingCost}-${icmsTax}-${desiredMargin}`;
 
   return (
     <div className="max-w-container-max mx-auto flex flex-col gap-section-gap">
@@ -453,34 +487,66 @@ export default function RegisterProductPage() {
         <div className="lg:col-span-4 sticky top-24">
           <div className="bg-primary-container rounded-xl shadow-lg border border-primary-fixed-dim overflow-hidden flex flex-col h-full">
             {/* Results Header */}
-            <div className="p-5 border-b border-on-primary-fixed-variant bg-inverse-surface">
+            <div className="p-5 border-b border-on-primary-fixed-variant bg-inverse-surface flex items-center justify-between">
               <h3 className="font-label-sm text-label-sm text-inverse-primary uppercase tracking-wider font-semibold">
                 Projeção Financeira
               </h3>
+              {pricingLoading && (
+                <span className="material-symbols-outlined text-inverse-primary text-[18px] animate-spin">
+                  progress_activity
+                </span>
+              )}
             </div>
+
+            {/* Pricing error banner */}
+            {pricingError && (
+              <div className="mx-4 mt-4 p-3 rounded-lg bg-error-container text-on-error-container border border-error/20 flex items-center gap-2 animate-in fade-in duration-200">
+                <span className="material-symbols-outlined text-error text-[18px] flex-shrink-0">
+                  error
+                </span>
+                <p className="font-body-md text-xs flex-1">{pricingError}</p>
+                <button
+                  onClick={() => setPricingError("")}
+                  className="text-error hover:opacity-70 cursor-pointer flex-shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    close
+                  </span>
+                </button>
+              </div>
+            )}
 
             {/* Primary Metric: Net Profit */}
             <div className="p-6 flex flex-col items-center justify-center border-b border-on-primary-fixed-variant bg-primary-container">
               <span className="font-label-sm text-label-sm text-on-primary-container mb-2">
                 Lucro Líquido por Unidade
               </span>
-              <div
-                className="flex items-baseline gap-1"
-                key={`profit-${flashKey}`}
-              >
-                <span className="font-data-tabular text-primary-fixed-dim text-xl">
-                  R$
-                </span>
-                <span
-                  className={`${status.valueClass} value-updated`}
-                  id="calcNetProfit"
-                >
-                  {netProfit.toFixed(2)}
-                </span>
-              </div>
-              <div className={status.badgeClass} id="profitStatus">
-                {status.text}
-              </div>
+              {pricingLoading && netProfit === null ? (
+                <div className="flex flex-col items-center gap-2 w-full">
+                  <div className="h-10 w-32 rounded-lg bg-on-primary-fixed-variant/20 animate-pulse" />
+                  <div className="h-5 w-20 rounded-full bg-on-primary-fixed-variant/20 animate-pulse" />
+                </div>
+              ) : (
+                <>
+                  <div
+                    className="flex items-baseline gap-1"
+                    key={`profit-${flashKey}`}
+                  >
+                    <span className="font-data-tabular text-primary-fixed-dim text-xl">
+                      R$
+                    </span>
+                    <span
+                      className={`${status.valueClass} value-updated`}
+                      id="calcNetProfit"
+                    >
+                      {(netProfit ?? 0).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className={status.badgeClass} id="profitStatus">
+                    {status.text}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Secondary Metrics Grid */}
@@ -494,12 +560,16 @@ export default function RegisterProductPage() {
                     Markup
                   </span>
                 </div>
-                <span
-                  className="font-data-tabular text-on-primary font-medium value-updated"
-                  key={`markup-${flashKey}`}
-                >
-                  {markup.toFixed(1)}%
-                </span>
+                {pricingLoading && markup === null ? (
+                  <div className="h-4 w-14 rounded bg-on-primary-fixed-variant/20 animate-pulse" />
+                ) : (
+                  <span
+                    className="font-data-tabular text-on-primary font-medium value-updated"
+                    key={`markup-${flashKey}`}
+                  >
+                    {((markup ?? 0) * 100).toFixed(1)}%
+                  </span>
+                )}
               </div>
 
               <div className="flex justify-between items-center pb-3 border-b border-on-primary-fixed-variant/50">
@@ -511,12 +581,16 @@ export default function RegisterProductPage() {
                     Margem de Contribuição
                   </span>
                 </div>
-                <span
-                  className="font-data-tabular text-on-primary font-medium value-updated"
-                  key={`contribution-${flashKey}`}
-                >
-                  {contributionMargin.toFixed(1)}%
-                </span>
+                {pricingLoading && contributionMargin === null ? (
+                  <div className="h-4 w-14 rounded bg-on-primary-fixed-variant/20 animate-pulse" />
+                ) : (
+                  <span
+                    className="font-data-tabular text-on-primary font-medium value-updated"
+                    key={`contribution-${flashKey}`}
+                  >
+                    {(contributionMargin ?? 0).toFixed(1)}%
+                  </span>
+                )}
               </div>
 
               <div className="flex justify-between items-center pt-2">
@@ -528,17 +602,21 @@ export default function RegisterProductPage() {
                     Para atingir a margem desejada
                   </span>
                 </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-data-tabular text-primary-fixed-dim text-sm">
-                    R$
-                  </span>
-                  <span
-                    className="font-data-tabular text-secondary-fixed font-bold text-lg value-updated"
-                    key={`minprice-${flashKey}`}
-                  >
-                    {minPrice.toFixed(2)}
-                  </span>
-                </div>
+                {pricingLoading && suggestedPrice === null ? (
+                  <div className="h-6 w-20 rounded bg-on-primary-fixed-variant/20 animate-pulse" />
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-data-tabular text-primary-fixed-dim text-sm">
+                      R$
+                    </span>
+                    <span
+                      className="font-data-tabular text-secondary-fixed font-bold text-lg value-updated"
+                      key={`minprice-${flashKey}`}
+                    >
+                      {(suggestedPrice ?? 0).toFixed(2)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
