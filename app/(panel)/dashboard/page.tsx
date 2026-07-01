@@ -777,7 +777,7 @@ export default function DashboardPage() {
               Produtos Mais Vendidos
             </h3>
             <Link
-              href={"/inventory"}
+              href={"/products"}
               className="font-label-sm text-label-sm text-secondary hover:text-on-secondary-fixed-variant transition-colors"
             >
               Ver Todos

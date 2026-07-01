@@ -170,6 +170,32 @@ export async function deleteProduct(id: string): Promise<void> {
   return apiFetch<void>(`/products/${id}`, { method: "DELETE" });
 }
 
+export interface UpdateProductBody {
+  name?: string;
+  stockQuantity?: number;
+  minStockAlert?: number;
+  metadata?: Record<string, unknown>;
+  acquisitionCost?: number;
+  shippingCost?: number;
+  taxRate?: number; // decimal: 0.18 = 18%
+  directCosts?: number;
+  timeSpent?: number;
+  lossIndex?: number;
+  desiredMargin?: number; // decimal: 0.30 = 30%
+  imageUrl?: string;
+  categoryId?: string | null;
+}
+
+export async function updateProduct(
+  id: string,
+  body: UpdateProductBody,
+): Promise<ApiProduct> {
+  return apiFetch<ApiProduct>(`products/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
 // ─── Pricing ─── //
 
 export interface PricingInput {
@@ -233,12 +259,16 @@ export interface CreateSaleBody {
   quantity: number;
   finalPrice: number; // Preço vendido no Marketplace
   status?: SaleStatus;
+  customerName?: string | null;
+  paymentMethodId?: string;
 }
 
 export interface UpdateSaleBody {
   quantity?: number;
   finalPrice?: number;
   status?: SaleStatus;
+  customerName?: string | null;
+  paymentMethodId?: string;
 }
 
 export interface SaleMutationResponse {

@@ -169,7 +169,7 @@ export default function DashboardLayout({
             </div>
             <div>
               <p className="font-body-md text-body-md font-semibold text-on-surface">
-                Conta Vendedor
+                Matheus Silva
               </p>
               <p className="font-label-sm text-label-sm text-on-surface-variant">
                 Tier Pro

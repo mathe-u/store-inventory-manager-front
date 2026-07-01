@@ -2,7 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { getProducts, deleteProduct, type ApiProduct } from "@/src/lib/api";
+import {
+  getProducts,
+  deleteProduct,
+  updateProduct,
+  getCategories,
+  calculatePricing,
+  type ApiProduct,
+  type ApiCategory,
+  type PricingResult,
+} from "@/src/lib/api";
 
 // Helper: parse the raw metadata JSON string from the API
 function parseMetadata(raw: string): Record<string, unknown> {
@@ -50,6 +59,134 @@ export default function ProductsPage() {
     null,
   );
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Categories State
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+  // Edit Mode State
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [saveEditError, setSaveEditError] = useState("");
+
+  // Edit Form Fields State
+  const [editName, setEditName] = useState("");
+  const [editCategoryId, setEditCategoryId] = useState("");
+  const [editCostPrice, setEditCostPrice] = useState("0.00");
+  const [editStockQuantity, setEditStockQuantity] = useState("0");
+  const [editMinStockAlert, setEditMinStockAlert] = useState("5");
+  const [editSellingPrice, setEditSellingPrice] = useState("0.00");
+  const [editDesiredMargin, setEditDesiredMargin] = useState("30");
+  const [editShippingCost, setEditShippingCost] = useState("0.00");
+  const [editIcmsTax, setEditIcmsTax] = useState("0");
+
+  // Dynamic pricing calculation states for editing
+  const [editPricingResult, setEditPricingResult] = useState<PricingResult | null>(null);
+  const [editPricingLoading, setEditPricingLoading] = useState(false);
+  const [editPricingError, setEditPricingError] = useState("");
+
+  // Fetch categories on mount
+  useEffect(() => {
+    getCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]))
+      .finally(() => setCategoriesLoading(false));
+  }, []);
+
+  // Debounced pricing calculation for edit mode
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    const acquisitionCost = parseFloat(editCostPrice) || 0;
+    const shippingCostVal = parseFloat(editShippingCost) || 0;
+    const taxRateVal = (parseFloat(editIcmsTax) || 0) / 100;
+    const desiredMarginVal = (parseFloat(editDesiredMargin) || 0) / 100;
+    const sellingPriceVal = parseFloat(editSellingPrice) || 0;
+
+    setEditPricingLoading(true);
+    setEditPricingError("");
+
+    const timer = setTimeout(() => {
+      calculatePricing({
+        acquisitionCost,
+        shippingCost: shippingCostVal,
+        taxRate: taxRateVal,
+        desiredMargin: desiredMarginVal,
+        sellingPrice: sellingPriceVal,
+      })
+        .then((result) => {
+          setEditPricingResult(result);
+          setEditPricingLoading(false);
+        })
+        .catch((err) => {
+          setEditPricingError(
+            err instanceof Error
+              ? err.message
+              : "Não foi possível calcular a precificação.",
+          );
+          setEditPricingLoading(false);
+        });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [isEditMode, editCostPrice, editShippingCost, editIcmsTax, editDesiredMargin, editSellingPrice]);
+
+  const startEditing = () => {
+    if (!selectedProduct) return;
+    setEditName(selectedProduct.name);
+    setEditCategoryId(selectedProduct.categoryId ?? "");
+    setEditCostPrice(selectedProduct.acquisitionCost.toString());
+    setEditStockQuantity(selectedProduct.stockQuantity.toString());
+    setEditMinStockAlert(selectedProduct.minStockAlert.toString());
+    setEditSellingPrice(deriveSellingPrice(selectedProduct).toString());
+    setEditDesiredMargin((selectedProduct.desiredMargin * 100).toString());
+    setEditShippingCost(selectedProduct.shippingCost.toString());
+    setEditIcmsTax((selectedProduct.taxRate * 100).toString());
+    setEditPricingResult(null);
+    setSaveEditError("");
+    setIsEditMode(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProduct) return;
+    if (!editName) {
+      setSaveEditError("Por favor, preencha o nome do produto.");
+      return;
+    }
+
+    setIsSavingEdit(true);
+    setSaveEditError("");
+
+    try {
+      const updatedProduct = await updateProduct(selectedProduct.id, {
+        name: editName,
+        categoryId: editCategoryId || null,
+        acquisitionCost: parseFloat(editCostPrice) || 0,
+        shippingCost: parseFloat(editShippingCost) || 0,
+        taxRate: (parseFloat(editIcmsTax) || 0) / 100,
+        desiredMargin: (parseFloat(editDesiredMargin) || 0) / 100,
+        stockQuantity: parseInt(editStockQuantity) || 0,
+        minStockAlert: parseInt(editMinStockAlert) || 0,
+        metadata: {
+          sellingPrice: parseFloat(editSellingPrice) || 0,
+          suggestedPrice: editPricingResult?.suggestedPrice ?? 0,
+        },
+      });
+
+      setProducts((prev) =>
+        prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
+      );
+      setSelectedProduct(updatedProduct);
+      setIsEditMode(false);
+    } catch (err) {
+      setSaveEditError(
+        err instanceof Error ? err.message : "Falha ao salvar produto.",
+      );
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   const loadProducts = useCallback(async () => {
     setIsLoading(true);
@@ -108,6 +245,7 @@ export default function ProductsPage() {
   const handleRowClick = (product: ApiProduct) => {
     setSelectedProduct(product);
     setIsDetailsOpen(true);
+    setIsEditMode(false);
   };
 
   return (
@@ -310,7 +448,7 @@ export default function ProductsPage() {
                           <button
                             onClick={(e) => handleDeleteClick(p, e)}
                             className="p-1.5 rounded hover:bg-error-container text-outline hover:text-error transition-colors cursor-pointer"
-                            title="Delete Product"
+                            title="Deletar Produto"
                           >
                             <span className="material-symbols-outlined text-[20px]">
                               delete
@@ -337,76 +475,194 @@ export default function ProductsPage() {
             (typeof meta.category === "string" ? meta.category : "—");
           const categoryColor = selectedProduct.category?.color ?? null;
 
-          // Selling price from metadata (saved at register time)
-          const sellingPrice = deriveSellingPrice(selectedProduct);
-          // Suggested price (optimal price computed by the API at register time)
-          const suggestedPrice =
-            typeof meta.suggestedPrice === "number" ? meta.suggestedPrice : null;
+          // Selling price from metadata (saved at register time) or form input
+          const sellingPrice = isEditMode
+            ? (parseFloat(editSellingPrice) || 0)
+            : deriveSellingPrice(selectedProduct);
 
           // Financial calculations matching PricingService logic
-          const netProfit = deriveNetProfit(selectedProduct, sellingPrice);
+          const netProfit = isEditMode
+            ? (editPricingResult?.atSellingPrice?.netProfit ?? 0)
+            : deriveNetProfit(selectedProduct, sellingPrice);
+
+          const suggestedPrice = isEditMode
+            ? (editPricingResult?.suggestedPrice ?? null)
+            : (typeof meta.suggestedPrice === "number" ? meta.suggestedPrice : null);
 
           // taxRate stored as decimal (0.20 = 20%)
-          const taxRatePct = selectedProduct.taxRate * 100;
-          const customsValue = selectedProduct.acquisitionCost + selectedProduct.shippingCost;
-          const baseICMS = selectedProduct.taxRate < 1
-            ? customsValue / (1 - selectedProduct.taxRate)
-            : customsValue;
-          const icmsTaxAmount = selectedProduct.taxRate < 1 ? baseICMS * selectedProduct.taxRate : 0;
+          const taxRatePct = isEditMode
+            ? (parseFloat(editIcmsTax) || 0)
+            : (selectedProduct.taxRate * 100);
+
+          const costVal = isEditMode
+            ? (parseFloat(editCostPrice) || 0)
+            : selectedProduct.acquisitionCost;
+
+          const shipVal = isEditMode
+            ? (parseFloat(editShippingCost) || 0)
+            : selectedProduct.shippingCost;
+
+          const taxRateDecimal = taxRatePct / 100;
+          const customsValue = costVal + shipVal;
+          const baseICMS =
+            taxRateDecimal < 1
+              ? customsValue / (1 - taxRateDecimal)
+              : customsValue;
+          const icmsTaxAmount =
+            taxRateDecimal < 1
+              ? baseICMS * taxRateDecimal
+              : 0;
 
           // desiredMargin stored as decimal (0.30 = 30%)
-          const drawerMarginPct = selectedProduct.desiredMargin * 100;
+          const drawerMarginPct = isEditMode
+            ? (parseFloat(editDesiredMargin) || 0)
+            : (selectedProduct.desiredMargin * 100);
+
           const lossIndexPct = selectedProduct.lossIndex * 100;
 
           // Markup: totalBaseCost multiplier (consistent with PricingService)
           const totalBaseCost =
-            selectedProduct.acquisitionCost +
-            selectedProduct.shippingCost +
+            costVal +
+            shipVal +
             icmsTaxAmount +
             selectedProduct.directCosts;
-          const markup = totalBaseCost > 0 ? (sellingPrice / totalBaseCost) * 100 : 0;
-          const contributionMargin =
-            sellingPrice > 0 ? (netProfit / sellingPrice) * 100 : 0;
+
+          const markup = isEditMode
+            ? (editPricingResult?.atSellingPrice?.markup !== undefined ? editPricingResult.atSellingPrice.markup * 100 : 0)
+            : (totalBaseCost > 0 ? (sellingPrice / totalBaseCost) * 100 : 0);
+
+          const contributionMargin = isEditMode
+            ? (editPricingResult?.atSellingPrice?.contributionMargin ?? 0)
+            : (sellingPrice > 0 ? (netProfit / sellingPrice) * 100 : 0);
 
           return (
             <>
               <div
-                onClick={() => setIsDetailsOpen(false)}
+                onClick={() => {
+                  if (!isSavingEdit) {
+                    setIsDetailsOpen(false);
+                  }
+                }}
                 className="fixed inset-0 bg-black/35 backdrop-blur-sm z-50 transition-opacity duration-200"
               />
               <div className="fixed right-0 top-0 h-full w-[460px] max-w-[90%] bg-surface-container-lowest border-l border-outline-variant shadow-2xl z-50 flex flex-col p-6 overflow-y-auto animate-in slide-in-from-right duration-300">
                 {/* Header */}
                 <div className="flex justify-between items-start border-b border-outline-variant pb-4 mb-6">
-                  <div>
-                    <span
-                      className="px-2.5 py-0.5 rounded-full text-xs font-semibold border"
-                      style={
-                        categoryColor
-                          ? {
-                              backgroundColor: categoryColor + "22",
-                              color: categoryColor,
-                              borderColor: categoryColor + "44",
-                            }
-                          : {
-                              background: "var(--color-surface-container)",
-                              color: "var(--color-on-surface-variant)",
-                              borderColor: "var(--color-outline-variant)",
-                            }
-                      }
-                    >
-                      {categoryName}
-                    </span>
-                    <h3 className="font-headline-md text-headline-md text-on-surface font-bold mt-2 leading-snug">
-                      {selectedProduct.name}
-                    </h3>
-                  </div>
+                  {isEditMode ? (
+                    <div className="flex-1 mr-4 flex flex-col gap-3">
+                      <div className="flex items-center gap-2 text-on-surface-variant">
+                        <span className="material-symbols-outlined text-secondary text-[20px]">
+                          edit
+                        </span>
+                        <h3 className="font-headline-md text-headline-sm text-on-surface font-bold">
+                          Editar Produto
+                        </h3>
+                      </div>
+
+                      {/* Name Input */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs text-on-surface-variant font-semibold">
+                          Nome do Produto
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="w-full px-3 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary transition-all"
+                          placeholder="Nome do produto"
+                        />
+                      </div>
+
+                      {/* Category Input */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs text-on-surface-variant font-semibold">
+                          Categoria
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={editCategoryId}
+                            onChange={(e) => setEditCategoryId(e.target.value)}
+                            disabled={categoriesLoading}
+                            className="w-full px-3 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-secondary transition-all appearance-none disabled:opacity-60"
+                          >
+                            <option value="">
+                              {categoriesLoading
+                                ? "Carregando categorias..."
+                                : "Sem categoria"}
+                            </option>
+                            {categories.map((cat) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </option>
+                            ))}
+                          </select>
+                          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
+                            arrow_drop_down
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <span
+                        className="px-2.5 py-0.5 rounded-full text-xs font-semibold border"
+                        style={
+                          categoryColor
+                            ? {
+                                backgroundColor: categoryColor + "22",
+                                color: categoryColor,
+                                borderColor: categoryColor + "44",
+                              }
+                            : {
+                                background: "var(--color-surface-container)",
+                                color: "var(--color-on-surface-variant)",
+                                borderColor: "var(--color-outline-variant)",
+                              }
+                        }
+                      >
+                        {categoryName}
+                      </span>
+                      <h3 className="font-headline-md text-headline-md text-on-surface font-bold mt-2 leading-snug">
+                        {selectedProduct.name}
+                      </h3>
+                    </div>
+                  )}
                   <button
-                    onClick={() => setIsDetailsOpen(false)}
+                    onClick={() => {
+                      if (!isSavingEdit) {
+                        setIsDetailsOpen(false);
+                      }
+                    }}
                     className="p-1.5 rounded-full hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[24px]">close</span>
+                    <span className="material-symbols-outlined text-[24px]">
+                      close
+                    </span>
                   </button>
                 </div>
+
+                {/* Error Alerts */}
+                {(saveEditError || editPricingError) && (
+                  <div className="flex flex-col gap-2 mb-4">
+                    {saveEditError && (
+                      <div className="p-3 rounded-lg bg-error-container text-on-error-container border border-error/20 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-error text-[18px]">
+                          error
+                        </span>
+                        <p className="text-xs font-semibold">{saveEditError}</p>
+                      </div>
+                    )}
+                    {editPricingError && (
+                      <div className="p-3 rounded-lg bg-error-container text-on-error-container border border-error/20 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-error text-[18px]">
+                          error
+                        </span>
+                        <p className="text-xs font-semibold">{editPricingError}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex flex-col gap-6 flex-grow">
                   {/* Primary metric */}
@@ -414,25 +670,36 @@ export default function ProductsPage() {
                     <span className="font-label-sm text-label-sm text-on-primary-container mb-1">
                       Lucro Líquido por Unidade
                     </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="font-data-tabular text-primary-fixed-dim text-lg">R$</span>
-                      <span
-                        className={`font-data-tabular text-3xl font-bold ${
-                          netProfit > 0 ? "text-tertiary-fixed" : "text-error"
-                        }`}
-                      >
-                        {netProfit.toFixed(2)}
-                      </span>
-                    </div>
-                    <span
-                      className={`mt-2.5 px-3 py-0.5 rounded-full text-xs font-bold ${
-                        netProfit > 0
-                          ? "bg-tertiary-container text-on-tertiary-container"
-                          : "bg-error-container text-on-error-container"
-                      }`}
-                    >
-                      {netProfit > 0 ? "LUCRATIVO" : "ATENÇÃO: PREJUÍZO"}
-                    </span>
+                    {editPricingLoading && isEditMode ? (
+                      <div className="flex flex-col items-center gap-2 w-full py-1">
+                        <div className="h-8 w-24 rounded bg-on-primary-fixed-variant/20 animate-pulse" />
+                        <div className="h-4 w-16 rounded bg-on-primary-fixed-variant/20 animate-pulse" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-data-tabular text-primary-fixed-dim text-lg">
+                            R$
+                          </span>
+                          <span
+                            className={`font-data-tabular text-3xl font-bold ${
+                              netProfit > 0 ? "text-tertiary-fixed" : "text-error"
+                            }`}
+                          >
+                            {netProfit.toFixed(2)}
+                          </span>
+                        </div>
+                        <span
+                          className={`mt-2.5 px-3 py-0.5 rounded-full text-xs font-bold ${
+                            netProfit > 0
+                              ? "bg-tertiary-container text-on-tertiary-container"
+                              : "bg-error-container text-on-error-container"
+                          }`}
+                        >
+                          {netProfit > 0 ? "LUCRATIVO" : "ATENÇÃO: PREJUÍZO"}
+                        </span>
+                      </>
+                    )}
                   </div>
 
                   {/* Pricing metrics grid */}
@@ -442,125 +709,319 @@ export default function ProductsPage() {
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-surface-container p-3.5 rounded-lg border border-outline-variant/40">
-                        <span className="text-xs text-on-surface-variant block mb-1">Markup</span>
-                        <span className="font-data-tabular text-lg font-bold text-on-surface">
-                          {markup.toFixed(1)}%
+                        <span className="text-xs text-on-surface-variant block mb-1">
+                          Markup
                         </span>
+                        {editPricingLoading && isEditMode ? (
+                          <div className="h-5 w-16 rounded bg-on-surface-variant/20 animate-pulse" />
+                        ) : (
+                          <span className="font-data-tabular text-lg font-bold text-on-surface">
+                            {markup.toFixed(1)}%
+                          </span>
+                        )}
                       </div>
                       <div className="bg-surface-container p-3.5 rounded-lg border border-outline-variant/40">
-                        <span className="text-xs text-on-surface-variant block mb-1">Margem de Contribuição</span>
-                        <span className="font-data-tabular text-lg font-bold text-on-surface">
-                          {contributionMargin.toFixed(1)}%
+                        <span className="text-xs text-on-surface-variant block mb-1">
+                          Margem de Contribuição
                         </span>
+                        {editPricingLoading && isEditMode ? (
+                          <div className="h-5 w-16 rounded bg-on-surface-variant/20 animate-pulse" />
+                        ) : (
+                          <span className="font-data-tabular text-lg font-bold text-on-surface">
+                            {contributionMargin.toFixed(1)}%
+                          </span>
+                        )}
                       </div>
-                      <div className="bg-surface-container p-3.5 rounded-lg border border-outline-variant/40">
-                        <span className="text-xs text-on-surface-variant block mb-1">Estoque</span>
-                        <span
-                          className={`font-data-tabular text-lg font-bold ${
-                            selectedProduct.stockQuantity <= selectedProduct.minStockAlert
-                              ? "text-error"
-                              : "text-on-surface"
-                          }`}
-                        >
-                          {selectedProduct.stockQuantity}{" "}
-                          <span className="text-xs font-normal text-on-surface-variant">un.</span>
-                        </span>
-                      </div>
-                      <div className="bg-surface-container p-3.5 rounded-lg border border-outline-variant/40">
-                        <span className="text-xs text-on-surface-variant block mb-1">Índice de Perda</span>
-                        <span
-                          className={`font-data-tabular text-lg font-bold ${
-                            lossIndexPct > 10 ? "text-error" : "text-on-surface"
-                          }`}
-                        >
-                          {lossIndexPct.toFixed(1)}%
-                        </span>
-                      </div>
+
+                      {isEditMode ? (
+                        <>
+                          <div className="bg-surface-container p-3 rounded-lg border border-outline-variant/40 flex flex-col gap-1">
+                            <label className="text-xs text-on-surface-variant font-medium">Estoque</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={editStockQuantity}
+                              onChange={(e) => setEditStockQuantity(e.target.value)}
+                              className="w-full px-2.5 py-1 bg-surface-container-low border border-outline-variant rounded-md text-on-surface font-semibold text-sm focus:outline-none focus:border-secondary text-right"
+                            />
+                          </div>
+                          <div className="bg-surface-container p-3 rounded-lg border border-outline-variant/40 flex flex-col gap-1">
+                            <label className="text-xs text-on-surface-variant font-medium">Alerta Mínimo</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={editMinStockAlert}
+                              onChange={(e) => setEditMinStockAlert(e.target.value)}
+                              className="w-full px-2.5 py-1 bg-surface-container-low border border-outline-variant rounded-md text-on-surface font-semibold text-sm focus:outline-none focus:border-secondary text-right"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="bg-surface-container p-3.5 rounded-lg border border-outline-variant/40">
+                            <span className="text-xs text-on-surface-variant block mb-1">
+                              Estoque
+                            </span>
+                            <span
+                              className={`font-data-tabular text-lg font-bold ${
+                                selectedProduct.stockQuantity <=
+                                selectedProduct.minStockAlert
+                                  ? "text-error"
+                                  : "text-on-surface"
+                              }`}
+                            >
+                              {selectedProduct.stockQuantity}{" "}
+                              <span className="text-xs font-normal text-on-surface-variant">
+                                un.
+                              </span>
+                            </span>
+                          </div>
+                          <div className="bg-surface-container p-3.5 rounded-lg border border-outline-variant/40">
+                            <span className="text-xs text-on-surface-variant block mb-1">
+                              Índice de Perda
+                            </span>
+                            <span
+                              className={`font-data-tabular text-lg font-bold ${
+                                lossIndexPct > 10 ? "text-error" : "text-on-surface"
+                              }`}
+                            >
+                              {lossIndexPct.toFixed(1)}%
+                            </span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
-                  {/* Prices */}
-                  <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/50 flex flex-col gap-3">
-                    <h4 className="font-label-sm text-label-sm text-on-surface font-semibold uppercase tracking-wider border-b border-outline-variant/40 pb-2">
-                      Preços
-                    </h4>
-                    <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                      <span>Preço de Venda (cadastrado)</span>
-                      <span className="font-data-tabular font-medium text-on-surface">
-                        R$ {sellingPrice.toFixed(2)}
-                      </span>
-                    </div>
-                    {suggestedPrice !== null && (
-                      <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                        <span>Preço Sugerido (calculado)</span>
-                        <span className="font-data-tabular font-medium text-secondary">
-                          R$ {suggestedPrice.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center text-body-md text-on-surface-variant border-t border-outline-variant/40 pt-2">
-                      <span>Margem Desejada</span>
-                      <span className="font-data-tabular font-bold text-secondary text-lg">
-                        {drawerMarginPct.toFixed(1)}%
-                      </span>
-                    </div>
-                  </div>
+                  {isEditMode ? (
+                    /* Edit Form pricing inputs */
+                    <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/50 flex flex-col gap-4">
+                      <h4 className="font-label-sm text-label-sm text-on-surface font-semibold uppercase tracking-wider border-b border-outline-variant/40 pb-2">
+                        Parâmetros de Precificação
+                      </h4>
+                      <div className="grid grid-cols-2 gap-3.5">
+                        <div className="flex flex-col gap-1 col-span-2">
+                          <label className="text-xs font-medium text-on-surface-variant">Preço de Venda Pretendido</label>
+                          <div className="relative flex items-center">
+                            <span className="absolute left-3 text-on-surface-variant text-sm font-semibold">R$</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={editSellingPrice}
+                              onChange={(e) => setEditSellingPrice(e.target.value)}
+                              className="w-full pl-9 pr-3 py-1.5 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-secondary text-right font-semibold font-data-tabular"
+                            />
+                          </div>
+                        </div>
 
-                  {/* Cost breakdown */}
-                  <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/50 flex flex-col gap-3">
-                    <h4 className="font-label-sm text-label-sm text-on-surface font-semibold uppercase tracking-wider border-b border-outline-variant/40 pb-2">
-                      Composição de Custos
-                    </h4>
-                    <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                      <span>Custo de Aquisição</span>
-                      <span className="font-data-tabular font-medium text-on-surface">
-                        R$ {selectedProduct.acquisitionCost.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                      <span>Frete / Envio</span>
-                      <span className="font-data-tabular font-medium text-on-surface">
-                        R$ {selectedProduct.shippingCost.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                      <span>ICMS / Marketplace ({taxRatePct.toFixed(1)}%)</span>
-                      <span className="font-data-tabular font-medium text-on-surface">
-                        R$ {icmsTaxAmount.toFixed(2)}
-                      </span>
-                    </div>
-                    {selectedProduct.directCosts > 0 && (
-                      <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                        <span>Custos Diretos</span>
-                        <span className="font-data-tabular font-medium text-on-surface">
-                          R$ {selectedProduct.directCosts.toFixed(2)}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-medium text-on-surface-variant">Margem Desejada (%)</label>
+                          <input
+                            type="number"
+                            step="1"
+                            value={editDesiredMargin}
+                            onChange={(e) => setEditDesiredMargin(e.target.value)}
+                            className="w-full px-3 py-1.5 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-secondary text-right font-semibold font-data-tabular"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-medium text-on-surface-variant">Custo Aquisição</label>
+                          <div className="relative flex items-center">
+                            <span className="absolute left-3 text-on-surface-variant text-sm font-semibold">R$</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={editCostPrice}
+                              onChange={(e) => setEditCostPrice(e.target.value)}
+                              className="w-full pl-9 pr-3 py-1.5 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-secondary text-right font-semibold font-data-tabular"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-medium text-on-surface-variant">Frete / Envio</label>
+                          <div className="relative flex items-center">
+                            <span className="absolute left-3 text-on-surface-variant text-sm font-semibold">R$</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={editShippingCost}
+                              onChange={(e) => setEditShippingCost(e.target.value)}
+                              className="w-full pl-9 pr-3 py-1.5 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-secondary text-right font-semibold font-data-tabular"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-medium text-on-surface-variant">ICMS / Taxas (%)</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={editIcmsTax}
+                            onChange={(e) => setEditIcmsTax(e.target.value)}
+                            className="w-full px-3 py-1.5 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-secondary text-right font-semibold font-data-tabular"
+                          />
+                        </div>
                       </div>
-                    )}
-                    <div className="flex justify-between items-center text-body-md border-t border-outline-variant/40 pt-2 font-medium">
-                      <span className="text-on-surface">Custo Total Base</span>
-                      <span className="font-data-tabular font-bold text-on-surface text-lg">
-                        R$ {totalBaseCost.toFixed(2)}
-                      </span>
+
+                      <div className="border-t border-outline-variant/40 pt-3.5 flex flex-col gap-2">
+                        <div className="flex justify-between items-center text-xs text-on-surface-variant font-medium">
+                          <span>Preço Mínimo Sugerido:</span>
+                          {editPricingLoading ? (
+                            <div className="h-4 w-16 bg-on-surface-variant/20 animate-pulse rounded" />
+                          ) : (
+                            <span className="text-secondary font-bold font-data-tabular">
+                              R$ {suggestedPrice !== null ? suggestedPrice.toFixed(2) : "0.00"}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-on-surface-variant font-medium">
+                          <span>Custo Total Base:</span>
+                          <span className="text-on-surface font-bold font-data-tabular">
+                            R$ {totalBaseCost.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* Read Mode Details Panels */
+                    <>
+                      {/* Prices */}
+                      <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/50 flex flex-col gap-3">
+                        <h4 className="font-label-sm text-label-sm text-on-surface font-semibold uppercase tracking-wider border-b border-outline-variant/40 pb-2">
+                          Preços
+                        </h4>
+                        <div className="flex justify-between items-center text-body-md text-on-surface-variant">
+                          <span>Preço de Venda (cadastrado)</span>
+                          <span className="font-data-tabular font-medium text-on-surface">
+                            R$ {sellingPrice.toFixed(2)}
+                          </span>
+                        </div>
+                        {suggestedPrice !== null && (
+                          <div className="flex justify-between items-center text-body-md text-on-surface-variant">
+                            <span>Preço Sugerido (calculado)</span>
+                            <span className="font-data-tabular font-medium text-secondary">
+                              R$ {suggestedPrice.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center text-body-md text-on-surface-variant border-t border-outline-variant/40 pt-2">
+                          <span>Margem Desejada</span>
+                          <span className="font-data-tabular font-bold text-secondary text-lg">
+                            {drawerMarginPct.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Cost breakdown */}
+                      <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/50 flex flex-col gap-3">
+                        <h4 className="font-label-sm text-label-sm text-on-surface font-semibold uppercase tracking-wider border-b border-outline-variant/40 pb-2">
+                          Composição de Custos
+                        </h4>
+                        <div className="flex justify-between items-center text-body-md text-on-surface-variant">
+                          <span>Custo de Aquisição</span>
+                          <span className="font-data-tabular font-medium text-on-surface">
+                            R$ {selectedProduct.acquisitionCost.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center text-body-md text-on-surface-variant">
+                          <span>Frete / Envio</span>
+                          <span className="font-data-tabular font-medium text-on-surface">
+                            R$ {selectedProduct.shippingCost.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center text-body-md text-on-surface-variant">
+                          <span>ICMS / Marketplace ({taxRatePct.toFixed(1)}%)</span>
+                          <span className="font-data-tabular font-medium text-on-surface">
+                            R$ {icmsTaxAmount.toFixed(2)}
+                          </span>
+                        </div>
+                        {selectedProduct.directCosts > 0 && (
+                          <div className="flex justify-between items-center text-body-md text-on-surface-variant">
+                            <span>Custos Diretos</span>
+                            <span className="font-data-tabular font-medium text-on-surface">
+                              R$ {selectedProduct.directCosts.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center text-body-md border-t border-outline-variant/40 pt-2 font-medium">
+                          <span className="text-on-surface">Custo Total Base</span>
+                          <span className="font-data-tabular font-bold text-on-surface text-lg">
+                            R$ {totalBaseCost.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Footer actions */}
                 <div className="border-t border-outline-variant pt-4 mt-6 flex gap-3">
-                  <button
-                    onClick={(e) => handleDeleteClick(selectedProduct, e)}
-                    className="flex-1 py-2.5 rounded-lg border border-error text-error hover:bg-error-container hover:text-on-error-container transition-colors font-label-sm text-label-sm font-semibold cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                    Remover Produto
-                  </button>
-                  <button
-                    onClick={() => setIsDetailsOpen(false)}
-                    className="flex-1 py-2.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors font-label-sm text-label-sm font-semibold cursor-pointer"
-                  >
-                    Fechar
-                  </button>
+                  {isEditMode ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditMode(false)}
+                        disabled={isSavingEdit}
+                        className="flex-1 py-2.5 rounded-lg border border-outline text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-sm text-label-sm font-semibold cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSaveEdit}
+                        disabled={isSavingEdit}
+                        className="flex-1 py-2.5 rounded-lg bg-secondary text-on-secondary hover:bg-opacity-95 transition-colors font-label-sm text-label-sm font-semibold cursor-pointer disabled:opacity-75 flex items-center justify-center gap-2"
+                      >
+                        {isSavingEdit ? (
+                          <>
+                            <span className="material-symbols-outlined text-[18px] animate-spin">
+                              progress_activity
+                            </span>
+                            Salvando...
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined text-[18px]">
+                              save
+                            </span>
+                            Salvar
+                          </>
+                        )}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteClick(selectedProduct, e)}
+                        className="flex-1 py-2.5 rounded-lg border border-error text-error hover:bg-error-container hover:text-on-error-container transition-colors font-label-sm text-label-sm font-semibold cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          delete
+                        </span>
+                        Remover
+                      </button>
+                      <button
+                        type="button"
+                        onClick={startEditing}
+                        className="flex-1 py-2.5 rounded-lg bg-secondary text-on-secondary hover:bg-opacity-90 transition-colors font-label-sm text-label-sm font-semibold cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          edit
+                        </span>
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsDetailsOpen(false)}
+                        className="flex-1 py-2.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors font-label-sm text-label-sm font-semibold cursor-pointer"
+                      >
+                        Fechar
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </>
