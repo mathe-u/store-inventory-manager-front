@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getProducts, createSale, calculatePricing, ApiProduct, PricingResult } from "@/src/lib/api";
+import {
+  getProducts,
+  createSale,
+  calculatePricing,
+  ApiProduct,
+  PricingResult,
+} from "@/src/lib/api";
+import PageHeader from "@/src/components/PageHeader";
 
 function parseMetadata(rawMetadata: string): Record<string, unknown> {
   try {
@@ -33,15 +40,21 @@ export default function LogNewSale() {
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
   const [finalPrice, setFinalPrice] = useState<string>("");
-  const [saleDate, setSaleDate] = useState(() => new Date().toISOString().split("T")[0]);
-  const [saleStatus, setSaleStatus] = useState<"COMPLETED" | "LOSS" | "RETURNED" | "PENDING">("COMPLETED");
+  const [saleDate, setSaleDate] = useState(
+    () => new Date().toISOString().split("T")[0],
+  );
+  const [saleStatus, setSaleStatus] = useState<
+    "COMPLETED" | "LOSS" | "RETURNED" | "PENDING"
+  >("COMPLETED");
 
   // Mock Form Fields (Optional in UI but not sent to API)
   const [customerName, setCustomerName] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState<string>("cash");
 
   // Pricing Calculation State
-  const [pricingResult, setPricingResult] = useState<PricingResult | null>(null);
+  const [pricingResult, setPricingResult] = useState<PricingResult | null>(
+    null,
+  );
   const [pricingLoading, setPricingLoading] = useState(false);
   const [pricingError, setPricingError] = useState<string | null>(null);
 
@@ -155,7 +168,8 @@ export default function LogNewSale() {
   const netProfitPerUnit = pricingResult?.atSellingPrice?.netProfit ?? 0;
   const expectedProfitVal = netProfitPerUnit * quantity;
 
-  const contributionMarginVal = pricingResult?.atSellingPrice?.contributionMargin ?? 0;
+  const contributionMarginVal =
+    pricingResult?.atSellingPrice?.contributionMargin ?? 0;
 
   // Tax calculations
   const taxRateVal = selectedProduct ? selectedProduct.taxRate : 0;
@@ -165,11 +179,14 @@ export default function LogNewSale() {
   function customsValueVal() {
     return costVal + shipVal;
   }
-  const baseICMS = taxRateVal < 1 ? customsValue / (1 - taxRateVal) : customsValue;
+  const baseICMS =
+    taxRateVal < 1 ? customsValue / (1 - taxRateVal) : customsValue;
   const icmsTaxAmount = taxRateVal < 1 ? baseICMS * taxRateVal : 0;
   const totalTaxVal = icmsTaxAmount * quantity;
 
-  const totalBaseCost = pricingResult ? pricingResult.totalBaseCost * quantity : 0;
+  const totalBaseCost = pricingResult
+    ? pricingResult.totalBaseCost * quantity
+    : 0;
 
   const currentStock = selectedProduct ? selectedProduct.stockQuantity : 0;
   const minStock = selectedProduct ? selectedProduct.minStockAlert : 0;
@@ -178,43 +195,29 @@ export default function LogNewSale() {
   return (
     <div className="max-w-container-max mx-auto flex flex-col gap-section-gap">
       {/* Page Header */}
-      <div className="flex justify-between items-end border-b border-outline-variant pb-4">
-        <div>
-          <div className="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm mb-2">
-            <span className="material-symbols-outlined text-[16px]">
-              payments
-            </span>
-            <Link href="/sales" className="hover:text-secondary transition-colors cursor-pointer">
-              Vendas
-            </Link>
-            <span className="material-symbols-outlined text-[14px]">
-              chevron_right
-            </span>
-            <span className="text-on-surface">Registrar Nova Venda</span>
-          </div>
-          <h2 className="font-display-lg text-display-lg text-on-surface mb-1">
-            Registrar Nova Venda
-          </h2>
-          <p className="text-on-surface-variant">
-            Registre uma nova transação no seu Marketplace.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/sales"
-            className="px-4 py-2.5 rounded-DEFAULT border border-outline text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-lowest transition-colors cursor-pointer flex items-center gap-2 shadow-sm font-semibold"
-          >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-            Voltar
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Registrar Nova Venda"
+        description="Registre uma nova transação no seu marketplace."
+        breadcrumbs={[
+          { label: "Vendas", icon: "payments", href: "/sales" },
+          { label: "Nova Venda" },
+        ]}
+        actionButton={{
+          label: "Voltar",
+          icon: "arrow_back",
+          variant: "outlined",
+          href: "/sales",
+        }}
+      ></PageHeader>
 
       {/* Asymmetric 12-Column Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-gutter items-start">
         {/* Left Column: The Form Canvas (Spans 7) */}
         <div className="lg:col-span-7">
-          <form onSubmit={handleSubmit} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 md:p-8 shadow-sm flex flex-col gap-6 relative overflow-hidden">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 md:p-8 shadow-sm flex flex-col gap-6 relative overflow-hidden"
+          >
             {/* Decorative subtle gradient top border indication */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary to-tertiary-fixed opacity-80" />
 
@@ -229,7 +232,9 @@ export default function LogNewSale() {
 
             {submitError && (
               <div className="p-3.5 rounded-lg bg-error-container text-on-error-container border border-error/20 flex items-center gap-2">
-                <span className="material-symbols-outlined text-error text-[18px]">error</span>
+                <span className="material-symbols-outlined text-error text-[18px]">
+                  error
+                </span>
                 <p className="text-xs font-semibold">{submitError}</p>
               </div>
             )}
@@ -252,11 +257,14 @@ export default function LogNewSale() {
                   className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition-all shadow-sm appearance-none disabled:opacity-60"
                 >
                   <option value="">
-                    {productsLoading ? "Carregando produtos..." : "Selecione o produto vendido..."}
+                    {productsLoading
+                      ? "Carregando produtos..."
+                      : "Selecione o produto vendido..."}
                   </option>
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} (Disponível: {p.stockQuantity} un. | Custo: R$ {p.acquisitionCost.toFixed(2)})
+                      {p.name} (Disponível: {p.stockQuantity} un. | Custo: R${" "}
+                      {p.acquisitionCost.toFixed(2)})
                     </option>
                   ))}
                 </select>
@@ -265,7 +273,9 @@ export default function LogNewSale() {
                 </span>
               </div>
               {productsError && (
-                <p className="text-xs text-error font-semibold mt-1">{productsError}</p>
+                <p className="text-xs text-error font-semibold mt-1">
+                  {productsError}
+                </p>
               )}
             </div>
 
@@ -284,7 +294,9 @@ export default function LogNewSale() {
                   min="1"
                   type="number"
                   value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={(e) =>
+                    setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+                  }
                   required
                 />
               </div>
@@ -451,9 +463,7 @@ export default function LogNewSale() {
                     <span className="material-symbols-outlined">
                       account_balance_wallet
                     </span>
-                    <span className="font-label-sm text-label-sm">
-                      Cartão
-                    </span>
+                    <span className="font-label-sm text-label-sm">Cartão</span>
                   </div>
                 </label>
 
@@ -470,9 +480,7 @@ export default function LogNewSale() {
                     <span className="material-symbols-outlined">
                       more_horiz
                     </span>
-                    <span className="font-label-sm text-label-sm">
-                      Outros
-                    </span>
+                    <span className="font-label-sm text-label-sm">Outros</span>
                   </div>
                 </label>
               </div>
@@ -527,7 +535,9 @@ export default function LogNewSale() {
                     Lucro Esperado
                   </h3>
                   <p className="font-body-md text-body-md text-on-surface-variant mt-1 text-sm">
-                    {selectedProduct ? `Baseado nos custos de: ${selectedProduct.name}` : "Selecione um produto para simular"}
+                    {selectedProduct
+                      ? `Baseado nos custos de: ${selectedProduct.name}`
+                      : "Selecione um produto para simular"}
                   </p>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-secondary">
@@ -555,16 +565,22 @@ export default function LogNewSale() {
                       </span>
                       {expectedProfitVal.toFixed(2)}
                     </span>
-                    <div className={`inline-flex items-center gap-1 mt-2 px-2 py-1 rounded font-label-sm text-label-sm font-semibold ${expectedProfitVal > 0 ? "bg-tertiary-container text-on-tertiary-container" : "bg-error-container text-on-error-container"}`}>
+                    <div
+                      className={`inline-flex items-center gap-1 mt-2 px-2 py-1 rounded font-label-sm text-label-sm font-semibold ${expectedProfitVal > 0 ? "bg-tertiary-container text-on-tertiary-container" : "bg-error-container text-on-error-container"}`}
+                    >
                       <span className="material-symbols-outlined text-[14px]">
-                        {expectedProfitVal > 0 ? "arrow_upward" : "arrow_downward"}
+                        {expectedProfitVal > 0
+                          ? "arrow_upward"
+                          : "arrow_downward"}
                       </span>
                       {contributionMarginVal.toFixed(1)}% Margem
                     </div>
                   </>
                 )}
                 {pricingError && (
-                  <p className="text-xs text-error font-semibold mt-1">{pricingError}</p>
+                  <p className="text-xs text-error font-semibold mt-1">
+                    {pricingError}
+                  </p>
                 )}
               </div>
 
@@ -594,7 +610,11 @@ export default function LogNewSale() {
                 </div>
                 <div className="flex justify-between items-center font-body-md text-body-md">
                   <span className="text-on-surface-variant">
-                    Taxes & ICMS ({selectedProduct ? (selectedProduct.taxRate * 100).toFixed(1) : "0.0"}%)
+                    Taxes & ICMS (
+                    {selectedProduct
+                      ? (selectedProduct.taxRate * 100).toFixed(1)
+                      : "0.0"}
+                    %)
                   </span>
                   <span className="font-data-tabular text-data-tabular text-on-surface">
                     -R$ {totalTaxVal.toFixed(2)}
@@ -615,12 +635,18 @@ export default function LogNewSale() {
                   </h4>
                   <p className="font-body-md text-body-md text-on-surface-variant text-sm">
                     Registrar esta venda reduzirá o inventário deste item para{" "}
-                    <strong className={`font-semibold ${remainingStock <= minStock ? "text-error" : "text-on-surface"}`}>
-                      {remainingStock} {remainingStock === 1 ? "unidade" : "unidades"}
+                    <strong
+                      className={`font-semibold ${remainingStock <= minStock ? "text-error" : "text-on-surface"}`}
+                    >
+                      {remainingStock}{" "}
+                      {remainingStock === 1 ? "unidade" : "unidades"}
                     </strong>
-                    . {remainingStock <= minStock && (
+                    .{" "}
+                    {remainingStock <= minStock && (
                       <span className="text-error font-medium">
-                        {" "}Você atingirá o limite mínimo de alerta ({minStock} un.).
+                        {" "}
+                        Você atingirá o limite mínimo de alerta ({minStock}{" "}
+                        un.).
                       </span>
                     )}
                   </p>

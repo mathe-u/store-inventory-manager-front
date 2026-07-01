@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import PageHeader from "@/src/components/PageHeader";
 import Link from "next/link";
 import {
   getProducts,
@@ -81,7 +82,8 @@ export default function ProductsPage() {
   const [editIcmsTax, setEditIcmsTax] = useState("0");
 
   // Dynamic pricing calculation states for editing
-  const [editPricingResult, setEditPricingResult] = useState<PricingResult | null>(null);
+  const [editPricingResult, setEditPricingResult] =
+    useState<PricingResult | null>(null);
   const [editPricingLoading, setEditPricingLoading] = useState(false);
   const [editPricingError, setEditPricingError] = useState("");
 
@@ -129,7 +131,14 @@ export default function ProductsPage() {
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [isEditMode, editCostPrice, editShippingCost, editIcmsTax, editDesiredMargin, editSellingPrice]);
+  }, [
+    isEditMode,
+    editCostPrice,
+    editShippingCost,
+    editIcmsTax,
+    editDesiredMargin,
+    editSellingPrice,
+  ]);
 
   const startEditing = () => {
     if (!selectedProduct) return;
@@ -175,7 +184,7 @@ export default function ProductsPage() {
       });
 
       setProducts((prev) =>
-        prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
+        prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)),
       );
       setSelectedProduct(updatedProduct);
       setIsEditMode(false);
@@ -251,41 +260,20 @@ export default function ProductsPage() {
   return (
     <div className="max-w-container-max mx-auto flex flex-col gap-section-gap">
       {/* Page Header */}
-      <div className="flex justify-between items-end border-b border-outline-variant pb-4">
-        <div>
-          <div className="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm mb-2">
-            <span className="material-symbols-outlined text-[16px]">
-              inventory_2
-            </span>
-            <span>Produtos</span>
-            <span className="material-symbols-outlined text-[14px]">
-              chevron_right
-            </span>
-            <span className="text-on-surface">Catálogo de Produtos</span>
-          </div>
-          <h2 className="font-headline-md text-headline-md text-on-surface">
-            Produtos Cadastrados
-          </h2>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={loadProducts}
-            className="p-2 rounded-DEFAULT border border-outline-variant text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer"
-            title="Atualizar"
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              refresh
-            </span>
-          </button>
-          <Link
-            href="/products/register"
-            className="px-4 py-2.5 rounded-DEFAULT bg-secondary text-on-secondary font-label-sm text-label-sm hover:bg-opacity-90 transition-colors flex items-center gap-2 shadow-sm font-semibold cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            Cadastrar Produto
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Produtos Cadastrados"
+        description="Visualize e gerencie seus produtos"
+        breadcrumbs={[
+          { label: "Produtos", icon: "inventory_2" },
+          { label: "Catálogo de Produtos" },
+        ]}
+        onRefresh={loadProducts}
+        actionButton={{
+          label: "Cadastrar Produto",
+          icon: "add",
+          href: "/products/register",
+        }}
+      ></PageHeader>
 
       {/* Search and Filters */}
       <div className="flex justify-between items-center gap-4 bg-surface-container-lowest border border-outline-variant p-4 rounded-xl shadow-sm">
@@ -477,7 +465,7 @@ export default function ProductsPage() {
 
           // Selling price from metadata (saved at register time) or form input
           const sellingPrice = isEditMode
-            ? (parseFloat(editSellingPrice) || 0)
+            ? parseFloat(editSellingPrice) || 0
             : deriveSellingPrice(selectedProduct);
 
           // Financial calculations matching PricingService logic
@@ -487,19 +475,21 @@ export default function ProductsPage() {
 
           const suggestedPrice = isEditMode
             ? (editPricingResult?.suggestedPrice ?? null)
-            : (typeof meta.suggestedPrice === "number" ? meta.suggestedPrice : null);
+            : typeof meta.suggestedPrice === "number"
+              ? meta.suggestedPrice
+              : null;
 
           // taxRate stored as decimal (0.20 = 20%)
           const taxRatePct = isEditMode
-            ? (parseFloat(editIcmsTax) || 0)
-            : (selectedProduct.taxRate * 100);
+            ? parseFloat(editIcmsTax) || 0
+            : selectedProduct.taxRate * 100;
 
           const costVal = isEditMode
-            ? (parseFloat(editCostPrice) || 0)
+            ? parseFloat(editCostPrice) || 0
             : selectedProduct.acquisitionCost;
 
           const shipVal = isEditMode
-            ? (parseFloat(editShippingCost) || 0)
+            ? parseFloat(editShippingCost) || 0
             : selectedProduct.shippingCost;
 
           const taxRateDecimal = taxRatePct / 100;
@@ -509,31 +499,32 @@ export default function ProductsPage() {
               ? customsValue / (1 - taxRateDecimal)
               : customsValue;
           const icmsTaxAmount =
-            taxRateDecimal < 1
-              ? baseICMS * taxRateDecimal
-              : 0;
+            taxRateDecimal < 1 ? baseICMS * taxRateDecimal : 0;
 
           // desiredMargin stored as decimal (0.30 = 30%)
           const drawerMarginPct = isEditMode
-            ? (parseFloat(editDesiredMargin) || 0)
-            : (selectedProduct.desiredMargin * 100);
+            ? parseFloat(editDesiredMargin) || 0
+            : selectedProduct.desiredMargin * 100;
 
           const lossIndexPct = selectedProduct.lossIndex * 100;
 
           // Markup: totalBaseCost multiplier (consistent with PricingService)
           const totalBaseCost =
-            costVal +
-            shipVal +
-            icmsTaxAmount +
-            selectedProduct.directCosts;
+            costVal + shipVal + icmsTaxAmount + selectedProduct.directCosts;
 
           const markup = isEditMode
-            ? (editPricingResult?.atSellingPrice?.markup !== undefined ? editPricingResult.atSellingPrice.markup * 100 : 0)
-            : (totalBaseCost > 0 ? (sellingPrice / totalBaseCost) * 100 : 0);
+            ? editPricingResult?.atSellingPrice?.markup !== undefined
+              ? editPricingResult.atSellingPrice.markup * 100
+              : 0
+            : totalBaseCost > 0
+              ? (sellingPrice / totalBaseCost) * 100
+              : 0;
 
           const contributionMargin = isEditMode
             ? (editPricingResult?.atSellingPrice?.contributionMargin ?? 0)
-            : (sellingPrice > 0 ? (netProfit / sellingPrice) * 100 : 0);
+            : sellingPrice > 0
+              ? (netProfit / sellingPrice) * 100
+              : 0;
 
           return (
             <>
@@ -658,7 +649,9 @@ export default function ProductsPage() {
                         <span className="material-symbols-outlined text-error text-[18px]">
                           error
                         </span>
-                        <p className="text-xs font-semibold">{editPricingError}</p>
+                        <p className="text-xs font-semibold">
+                          {editPricingError}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -683,7 +676,9 @@ export default function ProductsPage() {
                           </span>
                           <span
                             className={`font-data-tabular text-3xl font-bold ${
-                              netProfit > 0 ? "text-tertiary-fixed" : "text-error"
+                              netProfit > 0
+                                ? "text-tertiary-fixed"
+                                : "text-error"
                             }`}
                           >
                             {netProfit.toFixed(2)}
@@ -736,22 +731,30 @@ export default function ProductsPage() {
                       {isEditMode ? (
                         <>
                           <div className="bg-surface-container p-3 rounded-lg border border-outline-variant/40 flex flex-col gap-1">
-                            <label className="text-xs text-on-surface-variant font-medium">Estoque</label>
+                            <label className="text-xs text-on-surface-variant font-medium">
+                              Estoque
+                            </label>
                             <input
                               type="number"
                               min="0"
                               value={editStockQuantity}
-                              onChange={(e) => setEditStockQuantity(e.target.value)}
+                              onChange={(e) =>
+                                setEditStockQuantity(e.target.value)
+                              }
                               className="w-full px-2.5 py-1 bg-surface-container-low border border-outline-variant rounded-md text-on-surface font-semibold text-sm focus:outline-none focus:border-secondary text-right"
                             />
                           </div>
                           <div className="bg-surface-container p-3 rounded-lg border border-outline-variant/40 flex flex-col gap-1">
-                            <label className="text-xs text-on-surface-variant font-medium">Alerta Mínimo</label>
+                            <label className="text-xs text-on-surface-variant font-medium">
+                              Alerta Mínimo
+                            </label>
                             <input
                               type="number"
                               min="0"
                               value={editMinStockAlert}
-                              onChange={(e) => setEditMinStockAlert(e.target.value)}
+                              onChange={(e) =>
+                                setEditMinStockAlert(e.target.value)
+                              }
                               className="w-full px-2.5 py-1 bg-surface-container-low border border-outline-variant rounded-md text-on-surface font-semibold text-sm focus:outline-none focus:border-secondary text-right"
                             />
                           </div>
@@ -782,7 +785,9 @@ export default function ProductsPage() {
                             </span>
                             <span
                               className={`font-data-tabular text-lg font-bold ${
-                                lossIndexPct > 10 ? "text-error" : "text-on-surface"
+                                lossIndexPct > 10
+                                  ? "text-error"
+                                  : "text-on-surface"
                               }`}
                             >
                               {lossIndexPct.toFixed(1)}%
@@ -801,34 +806,48 @@ export default function ProductsPage() {
                       </h4>
                       <div className="grid grid-cols-2 gap-3.5">
                         <div className="flex flex-col gap-1 col-span-2">
-                          <label className="text-xs font-medium text-on-surface-variant">Preço de Venda Pretendido</label>
+                          <label className="text-xs font-medium text-on-surface-variant">
+                            Preço de Venda Pretendido
+                          </label>
                           <div className="relative flex items-center">
-                            <span className="absolute left-3 text-on-surface-variant text-sm font-semibold">R$</span>
+                            <span className="absolute left-3 text-on-surface-variant text-sm font-semibold">
+                              R$
+                            </span>
                             <input
                               type="number"
                               step="0.01"
                               value={editSellingPrice}
-                              onChange={(e) => setEditSellingPrice(e.target.value)}
+                              onChange={(e) =>
+                                setEditSellingPrice(e.target.value)
+                              }
                               className="w-full pl-9 pr-3 py-1.5 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-secondary text-right font-semibold font-data-tabular"
                             />
                           </div>
                         </div>
 
                         <div className="flex flex-col gap-1">
-                          <label className="text-xs font-medium text-on-surface-variant">Margem Desejada (%)</label>
+                          <label className="text-xs font-medium text-on-surface-variant">
+                            Margem Desejada (%)
+                          </label>
                           <input
                             type="number"
                             step="1"
                             value={editDesiredMargin}
-                            onChange={(e) => setEditDesiredMargin(e.target.value)}
+                            onChange={(e) =>
+                              setEditDesiredMargin(e.target.value)
+                            }
                             className="w-full px-3 py-1.5 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-secondary text-right font-semibold font-data-tabular"
                           />
                         </div>
 
                         <div className="flex flex-col gap-1">
-                          <label className="text-xs font-medium text-on-surface-variant">Custo Aquisição</label>
+                          <label className="text-xs font-medium text-on-surface-variant">
+                            Custo Aquisição
+                          </label>
                           <div className="relative flex items-center">
-                            <span className="absolute left-3 text-on-surface-variant text-sm font-semibold">R$</span>
+                            <span className="absolute left-3 text-on-surface-variant text-sm font-semibold">
+                              R$
+                            </span>
                             <input
                               type="number"
                               step="0.01"
@@ -840,21 +859,29 @@ export default function ProductsPage() {
                         </div>
 
                         <div className="flex flex-col gap-1">
-                          <label className="text-xs font-medium text-on-surface-variant">Frete / Envio</label>
+                          <label className="text-xs font-medium text-on-surface-variant">
+                            Frete / Envio
+                          </label>
                           <div className="relative flex items-center">
-                            <span className="absolute left-3 text-on-surface-variant text-sm font-semibold">R$</span>
+                            <span className="absolute left-3 text-on-surface-variant text-sm font-semibold">
+                              R$
+                            </span>
                             <input
                               type="number"
                               step="0.01"
                               value={editShippingCost}
-                              onChange={(e) => setEditShippingCost(e.target.value)}
+                              onChange={(e) =>
+                                setEditShippingCost(e.target.value)
+                              }
                               className="w-full pl-9 pr-3 py-1.5 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-secondary text-right font-semibold font-data-tabular"
                             />
                           </div>
                         </div>
 
                         <div className="flex flex-col gap-1">
-                          <label className="text-xs font-medium text-on-surface-variant">ICMS / Taxas (%)</label>
+                          <label className="text-xs font-medium text-on-surface-variant">
+                            ICMS / Taxas (%)
+                          </label>
                           <input
                             type="number"
                             step="0.1"
@@ -872,7 +899,10 @@ export default function ProductsPage() {
                             <div className="h-4 w-16 bg-on-surface-variant/20 animate-pulse rounded" />
                           ) : (
                             <span className="text-secondary font-bold font-data-tabular">
-                              R$ {suggestedPrice !== null ? suggestedPrice.toFixed(2) : "0.00"}
+                              R${" "}
+                              {suggestedPrice !== null
+                                ? suggestedPrice.toFixed(2)
+                                : "0.00"}
                             </span>
                           )}
                         </div>
@@ -932,7 +962,9 @@ export default function ProductsPage() {
                           </span>
                         </div>
                         <div className="flex justify-between items-center text-body-md text-on-surface-variant">
-                          <span>ICMS / Marketplace ({taxRatePct.toFixed(1)}%)</span>
+                          <span>
+                            ICMS / Marketplace ({taxRatePct.toFixed(1)}%)
+                          </span>
                           <span className="font-data-tabular font-medium text-on-surface">
                             R$ {icmsTaxAmount.toFixed(2)}
                           </span>
@@ -946,7 +978,9 @@ export default function ProductsPage() {
                           </div>
                         )}
                         <div className="flex justify-between items-center text-body-md border-t border-outline-variant/40 pt-2 font-medium">
-                          <span className="text-on-surface">Custo Total Base</span>
+                          <span className="text-on-surface">
+                            Custo Total Base
+                          </span>
                           <span className="font-data-tabular font-bold text-on-surface text-lg">
                             R$ {totalBaseCost.toFixed(2)}
                           </span>

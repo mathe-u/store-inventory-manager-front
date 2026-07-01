@@ -10,8 +10,8 @@
 !.yarn/releases
 !.yarn/versions
 
-# database
-*.db
+# development database
+dev.db
 
 # testing
 /coverage

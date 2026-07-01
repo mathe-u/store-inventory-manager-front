@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import PageHeader from "@/src/components/PageHeader";
 import Link from "next/link";
 import { getSales, ApiSale, SaleStatus } from "@/src/lib/api";
 
@@ -54,44 +55,20 @@ export default function SalesPage() {
   return (
     <div className="max-w-container-max mx-auto flex flex-col gap-section-gap">
       {/* Page Header */}
-      <div className="flex justify-between items-end border-b border-outline-variant pb-4 mb-8">
-        <div>
-          <div className="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm mb-2">
-            <span className="material-symbols-outlined text-[16px]">
-              payments
-            </span>
-            <span>Vendas</span>
-            <span className="material-symbols-outlined text-[14px]">
-              chevron_right
-            </span>
-            <span className="text-on-surface">Histórico de Transações</span>
-          </div>
-          <h2 className="font-display-lg text-display-lg text-on-surface mb-1">
-            Vendas
-          </h2>
-          <p className="text-on-surface-variant">
-            Monitore e gerencie as transações do seu Marketplace.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={loadSales}
-            className="p-2 rounded-DEFAULT border border-outline-variant text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer"
-            title="Atualizar"
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              refresh
-            </span>
-          </button>
-          <Link
-            href="/sales/register" /* Ajuste esta rota conforme necessário no seu app */
-            className="px-4 py-2.5 rounded-DEFAULT bg-secondary text-on-secondary font-label-sm text-label-sm hover:bg-opacity-90 transition-colors flex items-center gap-2 shadow-sm font-semibold cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            Registrar Venda
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Vendas"
+        description="Monitore e gerencie as transações do seu Marketplace."
+        breadcrumbs={[
+          { label: "vendas", icon: "payments" },
+          { label: "histórico de transações" },
+        ]}
+        onRefresh={loadSales}
+        actionButton={{
+          label: "Registrar Venda",
+          icon: "add",
+          href: "/sales/register",
+        }}
+      ></PageHeader>
 
       {/* ─── Metrics Summary ─── */}
       {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

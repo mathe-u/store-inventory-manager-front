@@ -9,6 +9,7 @@ import {
 } from "@/src/lib/api";
 import Chart from "chart.js/auto";
 import Link from "next/link";
+import PageHeader from "@/src/components/PageHeader";
 
 Chart.defaults.font.family = "JetBrains Mono, monospace";
 Chart.defaults.color = "#76777d";
@@ -422,64 +423,57 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-container-max mx-auto flex flex-col gap-section-gap">
-      {/* Page Header (Trecho solicitado) */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
-        <div>
-          <h2 className="font-display-lg-mobile md:font-display-lg text-[24px] md:text-[32px] font-bold text-on-surface">
-            Business Intelligence
-          </h2>
-          <p className="font-body-md text-[14px] text-on-surface-variant mt-1">
-            Visão em tempo real do desempenho do seu negócio e lucros.
-          </p>
-        </div>
-        {/* Period Selection */}
-        <div className="flex items-center gap-3">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-1 flex text-[12px] font-semibold">
-            <button
-              onClick={() => setPeriod(30)}
-              className={`px-4 py-1.5 rounded transition-colors ${
-                period === 30
-                  ? "bg-surface-container-low text-on-surface shadow-sm"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              30 Dias
-            </button>
+      {/* Page Header */}
+      <PageHeader
+        title="Business Intelligence"
+        description="Visão em tempo real do desempenho do seu negócio e lucros."
+        breadcrumbs={[{ label: "Dashboard", icon: "dashboard" }]}
+        rightContent={
+          <div className="flex items-center gap-3">
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-1 flex text-[12px] font-semibold">
+              <button
+                onClick={() => setPeriod(30)}
+                className={`px-4 py-1.5 rounded transition-colors ${
+                  period === 30
+                    ? "bg-surface-container-low text-on-surface shadow-sm"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                30 Dias
+              </button>
 
-            <button
-              onClick={() => setPeriod(90)}
-              className={`px-4 py-1.5 rounded transition-colors ${
-                period === 90
-                  ? "bg-surface-container-low text-on-surface shadow-sm"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              90 Dias
-            </button>
+              <button
+                onClick={() => setPeriod(90)}
+                className={`px-4 py-1.5 rounded transition-colors ${
+                  period === 90
+                    ? "bg-surface-container-low text-on-surface shadow-sm"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                90 Dias
+              </button>
 
-            <button
-              onClick={() => setPeriod(365)}
-              className={`px-4 py-1.5 rounded transition-colors ${
-                period === 365
-                  ? "bg-surface-container-low text-on-surface shadow-sm"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              12 Meses
+              <button
+                onClick={() => setPeriod(365)}
+                className={`px-4 py-1.5 rounded transition-colors ${
+                  period === 365
+                    ? "bg-surface-container-low text-on-surface shadow-sm"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                12 Meses
+              </button>
+            </div>
+
+            <button className="bg-primary text-on-primary px-4 py-2 rounded-lg text-[12px] font-semibold flex items-center gap-2 hover:bg-inverse-surface transition-colors">
+              <span className="material-symbols-outlined text-[18px]">
+                download
+              </span>
+              Exportar Relatório
             </button>
           </div>
-
-          <button className="bg-primary text-on-primary px-4 py-2 rounded-lg text-[12px] font-semibold flex items-center gap-2 hover:bg-inverse-surface transition-colors">
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: "18px" }}
-            >
-              download
-            </span>
-            Exportar Relatório
-          </button>
-        </div>
-      </div>
+        }
+      ></PageHeader>
 
       {/* Top KPIs Bento */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
