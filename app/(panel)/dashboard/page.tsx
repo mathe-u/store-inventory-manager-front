@@ -10,6 +10,7 @@ import {
 import Chart from "chart.js/auto";
 import Link from "next/link";
 import PageHeader from "@/src/components/PageHeader";
+import KpiCard from "@/src/components/KpiCard";
 
 Chart.defaults.font.family = "JetBrains Mono, monospace";
 Chart.defaults.color = "#76777d";
@@ -478,167 +479,53 @@ export default function DashboardPage() {
       {/* Top KPIs Bento */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {/* KPI 1: Gross Revenue */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col justify-between hover:shadow-sm transition-shadow">
-          <div className="flex justify-between items-start mb-4">
-            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-              Receita Bruta
-            </p>
-            <span className="material-symbols-outlined text-secondary">
-              payments
-            </span>
-          </div>
-          <div>
-            <h3 className="font-display-lg text-display-lg text-on-surface font-data-tabular">
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(dashboardStats.grossRevenue)}
-            </h3>
-            <div className="flex items-center gap-2 mt-2">
-              <span
-                className={`inline-flex items-center font-label-sm text-label-sm px-2 py-0.5 rounded-full ${(dashboardStats.grossRevenueDelta ?? 0) >= 0 ? "text-on-tertiary-container bg-tertiary-fixed" : "text-on-error-container bg-error-container"}`}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "14px" }}
-                >
-                  {(dashboardStats.grossRevenueDelta ?? 0) >= 0
-                    ? "trending_up"
-                    : "trending_down"}
-                </span>
-                {Math.abs(
-                  (dashboardStats.grossRevenueDelta ?? 0) * 100,
-                ).toFixed(1)}
-                %
-              </span>
-              <span className="font-body-md text-body-md text-on-surface-variant text-xs">
-                vs ultimo período
-              </span>
-            </div>
-          </div>
-        </div>
+        <KpiCard
+          title="Receita Bruta"
+          value={new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          }).format(dashboardStats.grossRevenue)}
+          icon="payments"
+          delta={dashboardStats.grossRevenueDelta}
+          deltaLabel="vs ultimo período"
+          iconColorClass="text-secondary"
+        />
 
         {/* KPI 2: Net Profit */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col justify-between hover:shadow-sm transition-shadow">
-          <div className="flex justify-between items-start mb-4">
-            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-              Lucro Líquido
-            </p>
-            <span className="material-symbols-outlined text-on-tertiary-container">
-              account_balance_wallet
-            </span>
-          </div>
-          <div>
-            <h3 className="font-display-lg text-display-lg text-on-surface font-data-tabular">
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(dashboardStats.netProfit)}
-            </h3>
-            <div className="flex items-center gap-2 mt-2">
-              <span
-                className={`inline-flex items-center font-label-sm text-label-sm px-2 py-0.5 rounded-full ${(dashboardStats.netProfitDelta ?? 0) >= 0 ? "text-on-tertiary-container bg-tertiary-fixed" : "text-on-error-container bg-error-container"}`}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "14px" }}
-                >
-                  {(dashboardStats.netProfitDelta ?? 0) >= 0
-                    ? "trending_up"
-                    : "trending_down"}
-                </span>
-                {Math.abs((dashboardStats.netProfitDelta ?? 0) * 100).toFixed(
-                  1,
-                )}
-                %
-              </span>
-              <span className="font-body-md text-body-md text-on-surface-variant text-xs">
-                vs ultimo período
-              </span>
-            </div>
-          </div>
-        </div>
+        <KpiCard
+          title="Lucro Líquido"
+          value={new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          }).format(dashboardStats.netProfit)}
+          icon="account_balance_wallet"
+          delta={dashboardStats.netProfitDelta}
+          deltaLabel="vs ultimo período"
+          iconColorClass="text-on-tertiary-container"
+        />
 
         {/* KPI 3: Total Orders */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col justify-between hover:shadow-sm transition-shadow">
-          <div className="flex justify-between items-start mb-4">
-            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-              Total de Pedidos
-            </p>
-            <span className="material-symbols-outlined text-primary">
-              local_shipping
-            </span>
-          </div>
-          <div>
-            <h3 className="font-display-lg text-display-lg text-on-surface font-data-tabular">
-              {new Intl.NumberFormat("en-US").format(
-                dashboardStats.totalOrders,
-              )}
-            </h3>
-            <div className="flex items-center gap-2 mt-2">
-              <span
-                className={`inline-flex items-center font-label-sm text-label-sm px-2 py-0.5 rounded-full ${(dashboardStats.totalOrdersDelta ?? 0) >= 0 ? "text-on-tertiary-container bg-tertiary-fixed" : "text-on-error-container bg-error-container"}`}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "14px" }}
-                >
-                  {(dashboardStats.totalOrdersDelta ?? 0) >= 0
-                    ? "trending_up"
-                    : "trending_down"}
-                </span>
-                {Math.abs((dashboardStats.totalOrdersDelta ?? 0) * 100).toFixed(
-                  1,
-                )}
-                %
-              </span>
-              <span className="font-body-md text-body-md text-on-surface-variant text-xs">
-                vs ultimo período
-              </span>
-            </div>
-          </div>
-        </div>
+        <KpiCard
+          title="Total de Pedidos"
+          value={dashboardStats.totalOrders}
+          icon="local_shipping"
+          delta={dashboardStats.totalOrdersDelta}
+          deltaLabel="vs ultimo período"
+          iconColorClass="text-primary"
+        />
 
-        {/* KPI 4: None */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col justify-between hover:shadow-sm transition-shadow">
-          <div className="flex justify-between items-start mb-4">
-            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-              None
-            </p>
-            <span className="material-symbols-outlined text-on-secondary-fixed-variant">
-              shopping_cart
-            </span>
-          </div>
-          <div>
-            <h3 className="font-display-lg text-display-lg text-on-surface font-data-tabular">
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(dashboardStats.grossProfit)}
-            </h3>
-            <div className="flex items-center gap-2 mt-2">
-              <span
-                className={`inline-flex items-center font-label-sm text-label-sm px-2 py-0.5 rounded-full ${(dashboardStats.grossProfitDelta ?? 0) >= 0 ? "text-on-tertiary-container bg-tertiary-fixed" : "text-on-error-container bg-error-container"}`}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "14px" }}
-                >
-                  {(dashboardStats.grossProfitDelta ?? 0) >= 0
-                    ? "trending_up"
-                    : "trending_down"}
-                </span>
-                {Math.abs((dashboardStats.grossProfitDelta ?? 0) * 100).toFixed(
-                  1,
-                )}
-                %
-              </span>
-              <span className="font-body-md text-body-md text-on-surface-variant text-xs">
-                vs ultimo período
-              </span>
-            </div>
-          </div>
-        </div>
+        {/* KPI 4: Gross Profit */}
+        <KpiCard
+          title="Lucro Bruto"
+          value={new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          }).format(dashboardStats.grossProfit)}
+          icon="shopping_cart"
+          delta={0}
+          deltaLabel="vs ultimo período"
+          iconColorClass="text-on-secondary-fixed-variant"
+        />
       </div>
 
       {/* Dashboard Charts */}
