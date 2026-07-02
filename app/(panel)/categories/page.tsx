@@ -14,6 +14,7 @@ import {
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
+import ErrorAlert from "@/src/components/ErrorAlert";
 
 const PRESET_COLORS = [
   "#0051d5",
@@ -295,23 +296,11 @@ export default function CategoriesPage() {
 
       {/* Error */}
       {loadError && (
-        <div className="p-4 rounded-xl bg-error-container text-on-error-container border border-error/20 flex items-center gap-3">
-          <span className="material-symbols-outlined text-error text-[24px]">
-            error
-          </span>
-          <div>
-            <p className="font-label-sm font-semibold">
-              Falha ao carregar categorias
-            </p>
-            <p className="font-body-md text-sm">{loadError}</p>
-          </div>
-          <button
-            onClick={loadCategories}
-            className="ml-auto px-3 py-1.5 rounded-lg border border-error text-error font-label-sm text-label-sm hover:bg-error hover:text-on-error transition-colors cursor-pointer"
-          >
-            Tentar Novamente
-          </button>
-        </div>
+        <ErrorAlert
+          title="Falha ao carregar categorias"
+          message={loadError}
+          onRetry={loadCategories}
+        />
       )}
 
       {/* Table */}
