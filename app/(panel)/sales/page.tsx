@@ -5,6 +5,7 @@ import PageHeader from "@/src/components/PageHeader";
 import Link from "next/link";
 import { getSales, ApiSale, SaleStatus } from "@/src/lib/api";
 import SearchFilterBar from "@/src/components/SearchFilterBar";
+import LoadingState from "@/src/components/LoadingState";
 
 export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
@@ -202,14 +203,7 @@ export default function SalesPage() {
       {/* Table */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden mb-6">
         {isLoading ? (
-          <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-            <span className="material-symbols-outlined text-secondary text-[48px] animate-spin">
-              progress_activity
-            </span>
-            <p className="font-body-md text-on-surface-variant">
-              Carregando transações...
-            </p>
-          </div>
+          <LoadingState message="Carregando vendas..." />
         ) : sales.length === 0 ? (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
             <span className="material-symbols-outlined text-outline-variant text-[48px]">
