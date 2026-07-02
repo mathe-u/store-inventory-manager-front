@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getSales, ApiSale, SaleStatus } from "@/src/lib/api";
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
+import EmptyState from "@/src/components/EmptyState";
 
 export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
@@ -205,25 +206,18 @@ export default function SalesPage() {
         {isLoading ? (
           <LoadingState message="Carregando vendas..." />
         ) : sales.length === 0 ? (
-          <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-            <span className="material-symbols-outlined text-outline-variant text-[48px]">
-              payments
-            </span>
-            <p className="font-headline-md text-on-surface font-semibold">
-              Nenhuma venda encontrada
-            </p>
-            <p className="font-body-md text-on-surface-variant max-w-sm">
-              Nenhuma venda cadastrada ainda. Comece registrando sua primeira
-              venda.
-            </p>
-            <Link
-              href="/sales/register"
-              className="mt-2 px-4 py-2.5 rounded-DEFAULT bg-secondary text-on-secondary font-label-sm text-label-sm hover:bg-opacity-90 transition-colors flex items-center gap-2 shadow-sm font-semibold cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              Registrar Venda
-            </Link>
-          </div>
+          <EmptyState
+            icon="payments"
+            title="Nenhuma venda encontrada"
+            description={
+              "Nenhuma venda cadastrada ainda. Comece registrando sua primeira venda."
+            }
+            actionButton={{
+              label: "Registrar Venda",
+              icon: "add",
+              href: "/sales/register",
+            }}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse table-auto">

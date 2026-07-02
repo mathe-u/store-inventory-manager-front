@@ -13,6 +13,7 @@ import {
 } from "@/src/lib/api";
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
+import EmptyState from "@/src/components/EmptyState";
 
 const PRESET_COLORS = [
   "#0051d5",
@@ -318,27 +319,20 @@ export default function CategoriesPage() {
         {isLoading ? (
           <LoadingState message="Carregando categorias..." />
         ) : filtered.length === 0 ? (
-          <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-            <span className="material-symbols-outlined text-outline-variant text-[48px]">
-              category
-            </span>
-            <p className="font-headline-md text-on-surface font-semibold">
-              Nenhuma categoria encontrada
-            </p>
-            <p className="font-body-md text-on-surface-variant max-w-sm">
-              {searchTerm
+          <EmptyState
+            icon="category"
+            title="Nenhuma categoria encontrada"
+            description={
+              searchTerm
                 ? "Nenhuma categoria com esse filtro."
-                : "Comece criando a primeira categoria."}
-            </p>
-            {!searchTerm && (
-              <button
-                onClick={openCreate}
-                className="mt-2 px-4 py-2 rounded-DEFAULT bg-secondary text-on-secondary font-label-sm text-label-sm hover:opacity-90 transition-all font-semibold cursor-pointer"
-              >
-                Nova Categoria
-              </button>
-            )}
-          </div>
+                : "Comece criando a primeira categoria."
+            }
+            actionButton={{
+              label: "Nova categoria",
+              icon: "add",
+              onClick: openCreate,
+            }}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">

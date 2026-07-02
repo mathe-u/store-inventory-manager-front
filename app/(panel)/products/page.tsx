@@ -15,6 +15,7 @@ import {
 } from "@/src/lib/api";
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
+import EmptyState from "@/src/components/EmptyState";
 
 // Helper: parse the raw metadata JSON string from the API
 function parseMetadata(raw: string): Record<string, unknown> {
@@ -312,25 +313,20 @@ export default function ProductsPage() {
         {isLoading ? (
           <LoadingState message="Carregando produtos..." />
         ) : filteredProducts.length === 0 ? (
-          <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-            <span className="material-symbols-outlined text-outline-variant text-[48px]">
-              inventory_2
-            </span>
-            <p className="font-headline-md text-on-surface font-semibold">
-              Nenhum produto encontrado
-            </p>
-            <p className="font-body-md text-on-surface-variant max-w-sm">
-              {searchTerm
-                ? "Nenhum produto encontrado."
-                : "Nenhum produto cadastrado ainda. Comece cadastrando seu primeiro produto."}
-            </p>
-            <Link
-              href="/products/register"
-              className="mt-2 px-4 py-2 rounded-DEFAULT bg-secondary text-on-secondary font-label-sm text-label-sm hover:opacity-90 transition-all font-semibold"
-            >
-              Cadastrar Produto
-            </Link>
-          </div>
+          <EmptyState
+            icon="inventory_2"
+            title="Nenhum produto encontrado"
+            description={
+              searchTerm
+                ? "Nenhum produto com esse filtro."
+                : "Nenhum produto cadastrado ainda. Comece cadastrando seu primeiro produto."
+            }
+            actionButton={{
+              label: "Cadastrar Produto",
+              icon: "add",
+              href: "/products/register",
+            }}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
