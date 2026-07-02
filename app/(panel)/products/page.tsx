@@ -13,6 +13,7 @@ import {
   type ApiCategory,
   type PricingResult,
 } from "@/src/lib/api";
+import SearchFilterBar from "@/src/components/SearchFilterBar";
 
 // Helper: parse the raw metadata JSON string from the API
 function parseMetadata(raw: string): Record<string, unknown> {
@@ -276,25 +277,13 @@ export default function ProductsPage() {
       ></PageHeader>
 
       {/* Search and Filters */}
-      <div className="flex justify-between items-center gap-4 bg-surface-container-lowest border border-outline-variant p-4 rounded-xl shadow-sm">
-        <div className="relative w-full max-w-md focus-within:ring-2 focus-within:ring-secondary rounded-DEFAULT">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">
-            search
-          </span>
-          <input
-            className="w-full bg-surface-container-low border-none rounded-DEFAULT py-2 pl-9 pr-4 text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none"
-            placeholder="Filtrar por nome, Id ou categoria..."
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="text-label-sm text-on-surface-variant font-medium">
-          {isLoading
-            ? "Carregando..."
-            : `Mostrando ${filteredProducts.length} de ${products.length} produtos`}
-        </div>
-      </div>
+      <SearchFilterBar
+        placeholder="Filtrar por nome, Id ou categoria..."
+        value={searchTerm}
+        onChange={setSearchTerm}
+        totalCountText={`Mostrando ${filteredProducts.length} de ${products.length} produtos`}
+        isLoading={isLoading}
+      />
 
       {/* Error state */}
       {loadError && (

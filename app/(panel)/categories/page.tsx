@@ -11,6 +11,7 @@ import {
   type CreateCategoryBody,
   type UpdateCategoryBody,
 } from "@/src/lib/api";
+import SearchFilterBar from "@/src/components/SearchFilterBar";
 
 const PRESET_COLORS = [
   "#0051d5",
@@ -282,25 +283,13 @@ export default function CategoriesPage() {
       />
 
       {/* Search bar */}
-      <div className="flex justify-between items-center gap-4 bg-surface-container-lowest border border-outline-variant p-4 rounded-xl shadow-sm">
-        <div className="relative w-full max-w-md focus-within:ring-2 focus-within:ring-secondary rounded-DEFAULT">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">
-            search
-          </span>
-          <input
-            className="w-full bg-surface-container-low border-none rounded-DEFAULT py-2 pl-9 pr-4 text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none"
-            placeholder="Filtrar por nome ou descrição..."
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="text-label-sm text-on-surface-variant font-medium whitespace-nowrap">
-          {isLoading
-            ? "Carregando..."
-            : `${filtered.length} de ${categories.length} categorias`}
-        </div>
-      </div>
+      <SearchFilterBar
+        placeholder="Filtrar por nome ou descrição..."
+        value={searchTerm}
+        onChange={setSearchTerm}
+        totalCountText={`${filtered.length} de ${categories.length} categorias`}
+        isLoading={isLoading}
+      />
 
       {/* Error */}
       {loadError && (

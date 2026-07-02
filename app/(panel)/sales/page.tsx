@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import PageHeader from "@/src/components/PageHeader";
 import Link from "next/link";
 import { getSales, ApiSale, SaleStatus } from "@/src/lib/api";
+import SearchFilterBar from "@/src/components/SearchFilterBar";
 
 export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
@@ -70,7 +71,7 @@ export default function SalesPage() {
         }}
       ></PageHeader>
 
-      {/* ─── Metrics Summary ─── */}
+      {/* Metrics Summary */}
       {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -158,19 +159,13 @@ export default function SalesPage() {
         </div>
       </div> */}
 
-      {/* ─── Filters ─── */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-8 flex flex-wrap items-center gap-4 shadow-sm">
-        <div className="flex-1 min-w-[240px] relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
-            person_search
-          </span>
-          <input
-            className="w-full border border-outline-variant rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-secondary focus:border-secondary outline-none text-body-md"
-            placeholder="Buscar cliente, produto ..."
-            type="text"
-          />
-        </div>
-        <div className="flex items-center gap-2">
+      {/* Filters */}
+      <SearchFilterBar
+        placeholder="Buscar cliente, produto ..."
+        value={""}
+        onChange={(e) => {}}
+      >
+        {/* <div className="flex items-center gap-2">
           <span className="text-label-sm font-label-sm text-on-surface-variant">
             Data:
           </span>
@@ -181,6 +176,7 @@ export default function SalesPage() {
             <span className="text-body-md">Oct 01 - Oct 31, 2023</span>
           </div>
         </div>
+
         <div className="flex items-center gap-2">
           <span className="text-label-sm font-label-sm text-on-surface-variant">
             Status:
@@ -193,15 +189,17 @@ export default function SalesPage() {
             <option value="LOSS">Prejuízo</option>
           </select>
         </div>
+
         <button className="bg-primary text-on-primary px-6 py-2 rounded-lg font-semibold hover:opacity-90 active:scale-95 transition-all">
           Filtrar
         </button>
+
         <button className="text-secondary font-semibold px-4 py-2 hover:bg-surface-container-low rounded-lg transition-all">
           Limpar
-        </button>
-      </div>
+        </button> */}
+      </SearchFilterBar>
 
-      {/* ─── Table ─── */}
+      {/* Table */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden mb-6">
         {isLoading ? (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
@@ -335,7 +333,7 @@ export default function SalesPage() {
         )}
       </div>
 
-      {/* ─── Pagination ─── */}
+      {/* Pagination */}
       {sales.length > 0 && (
         <div className="flex items-center justify-between bg-surface-container-lowest border border-outline-variant rounded-xl px-6 py-4 shadow-sm">
           <div className="text-on-surface-variant text-body-md">
