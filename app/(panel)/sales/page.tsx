@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import PageHeader from "@/src/components/PageHeader";
 import Link from "next/link";
-import { getSales, ApiSale, SaleStatus } from "@/src/lib/api";
+import {
+  getSales,
+  ApiSale,
+  SaleStatus,
+  deleteSale,
+  updateSale,
+  UpdateSaleBody,
+} from "@/src/lib/api";
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
@@ -21,6 +28,36 @@ export default function SalesPage() {
       console.error("Failed to fetch sales", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteSale = async (id: string) => {
+    const confirmDelete = window.confirm(
+      "Tem certeza que deseja excluir essa venda?",
+    );
+    if (!confirmDelete) return;
+
+    try {
+      // loading state
+      await deleteSale(id);
+      await loadSales();
+    } catch (error) {
+      console.error("Failed to delete sale", error);
+    }
+  };
+
+  const handleUpdateSale = async (id: string, updatedData: UpdateSaleBody) => {
+    try {
+      // loading state
+      await updateSale(id, updatedData);
+      await loadSales();
+    } catch (error) {
+      console.error("Failed to update sale", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível atualizar a venda.",
+      );
     }
   };
 
