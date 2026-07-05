@@ -14,6 +14,7 @@ import {
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
+import Badge from "@/src/components/Badge";
 import ErrorAlert from "@/src/components/ErrorAlert";
 
 const PRESET_COLORS = [
@@ -346,16 +347,7 @@ export default function CategoriesPage() {
                           className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-black/10"
                           style={{ backgroundColor: cat.color }}
                         />
-                        <span
-                          className="px-2.5 py-0.5 rounded-full text-xs font-semibold border"
-                          style={{
-                            backgroundColor: cat.color + "22",
-                            color: cat.color,
-                            borderColor: cat.color + "44",
-                          }}
-                        >
-                          {cat.name}
-                        </span>
+                        <Badge label={cat.name} color={cat.color ?? undefined} />
                       </div>
                     </td>
                     <td className="p-4 text-on-surface-variant text-sm max-w-xs truncate">
@@ -364,9 +356,10 @@ export default function CategoriesPage() {
                       )}
                     </td>
                     <td className="p-4 text-center">
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/50 font-data-tabular">
-                        {cat._count?.products ?? 0}
-                      </span>
+                      <Badge
+                        label={String(cat._count?.products ?? 0)}
+                        tabular
+                      />
                     </td>
                     <td className="p-4 font-data-tabular text-on-surface-variant text-sm">
                       {new Intl.DateTimeFormat("pt-BR").format(

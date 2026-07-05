@@ -16,6 +16,7 @@ import {
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
+import Badge from "@/src/components/Badge";
 import ErrorAlert from "@/src/components/ErrorAlert";
 
 // Helper: parse the raw metadata JSON string from the API
@@ -355,20 +356,7 @@ export default function ProductsPage() {
                         {p.name}
                       </td>
                       <td className="p-4">
-                        <span
-                          className="px-2.5 py-0.5 rounded-full text-xs font-semibold border"
-                          style={
-                            categoryColor
-                              ? {
-                                  backgroundColor: categoryColor + "22",
-                                  color: categoryColor,
-                                  borderColor: categoryColor + "44",
-                                }
-                              : {}
-                          }
-                        >
-                          {categoryName}
-                        </span>
+                        <Badge label={categoryName} color={categoryColor ?? undefined} />
                       </td>
                       <td className="p-4 text-right font-data-tabular text-on-surface-variant">
                         R$ {p.acquisitionCost.toFixed(2)}
@@ -377,15 +365,11 @@ export default function ProductsPage() {
                         {marginPct.toFixed(1)}%
                       </td>
                       <td className="p-4 text-right font-data-tabular text-on-surface">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            p.stockQuantity <= p.minStockAlert
-                              ? "bg-error-container text-on-error-container"
-                              : "bg-tertiary-container text-on-tertiary-container"
-                          }`}
-                        >
-                          {p.stockQuantity}
-                        </span>
+                        <Badge
+                          label={String(p.stockQuantity)}
+                          variant={p.stockQuantity <= p.minStockAlert ? "danger" : "success"}
+                          tabular
+                        />
                       </td>
                       <td className="p-4 text-center">
                         <div className="flex items-center justify-center gap-1">
@@ -564,24 +548,7 @@ export default function ProductsPage() {
                     </div>
                   ) : (
                     <div>
-                      <span
-                        className="px-2.5 py-0.5 rounded-full text-xs font-semibold border"
-                        style={
-                          categoryColor
-                            ? {
-                                backgroundColor: categoryColor + "22",
-                                color: categoryColor,
-                                borderColor: categoryColor + "44",
-                              }
-                            : {
-                                background: "var(--color-surface-container)",
-                                color: "var(--color-on-surface-variant)",
-                                borderColor: "var(--color-outline-variant)",
-                              }
-                        }
-                      >
-                        {categoryName}
-                      </span>
+                      <Badge label={categoryName} color={categoryColor ?? undefined} />
                       <h3 className="font-headline-md text-headline-md text-on-surface font-bold mt-2 leading-snug">
                         {selectedProduct.name}
                       </h3>

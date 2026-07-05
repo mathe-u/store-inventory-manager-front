@@ -14,6 +14,7 @@ import {
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
+import Badge, { BadgeVariant } from "@/src/components/Badge";
 
 export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
@@ -78,17 +79,13 @@ export default function SalesPage() {
     return `R$ ${value.toFixed(2)}`;
   };
 
-  const getStatusStyle = (status: SaleStatus) => {
+  const getStatusVariant = (status: SaleStatus): BadgeVariant => {
     switch (status) {
-      case "COMPLETED":
-        return "bg-tertiary-container/10 text-on-tertiary-container border-on-tertiary-container/20";
-      case "PENDING":
-        return "bg-surface-container-high text-on-surface border-outline-variant";
+      case "COMPLETED": return "success";
+      case "PENDING":   return "warning";
       case "RETURNED":
-      case "LOSS":
-        return "bg-error-container text-on-error-container border-error-container";
-      default:
-        return "bg-surface-container-high text-on-surface border-outline-variant";
+      case "LOSS":      return "danger";
+      default:          return "default";
     }
   };
 
@@ -337,11 +334,10 @@ export default function SalesPage() {
                       {formatCurrency(Math.abs(sale.calculatedProfit))}
                     </td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border capitalize ${getStatusStyle(sale.status)}`}
-                      >
-                        {sale.status.toLowerCase()}
-                      </span>
+                      <Badge
+                        label={sale.status.toLowerCase()}
+                        variant={getStatusVariant(sale.status)}
+                      />
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button className="text-on-surface-variant hover:text-secondary active:scale-95 transition-transform">
