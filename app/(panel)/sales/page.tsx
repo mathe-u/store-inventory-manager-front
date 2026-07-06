@@ -9,16 +9,34 @@ import {
   SaleStatus,
   deleteSale,
   updateSale,
-  UpdateSaleBody,
 } from "@/src/lib/api";
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
 import Badge, { BadgeVariant } from "@/src/components/Badge";
+import Modal from "@/src/components/Modal";
 
 export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Dropdown Menu State
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+  // Edit Modal State
+  const [editTarget, setEditTarget] = useState<ApiSale | null>(null);
+  const [editForm, setEditForm] = useState({
+    quantity: 1,
+    finalPrice: 0,
+    status: "COMPLETED" as SaleStatus,
+    customerName: "",
+    paymentMethodId: "cash",
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Delete Modal State
+  const [deleteTarget, setDeleteTarget] = useState<ApiSale | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadSales = async () => {
     setIsLoading(true);
@@ -32,26 +50,31 @@ export default function SalesPage() {
     }
   };
 
-  const handleDeleteSale = async (id: string) => {
-    const confirmDelete = window.confirm(
-      "Tem certeza que deseja excluir essa venda?",
-    );
-    if (!confirmDelete) return;
-
-    try {
-      // loading state
-      await deleteSale(id);
-      await loadSales();
-    } catch (error) {
-      console.error("Failed to delete sale", error);
-    }
+  const openEditModal = (sale: ApiSale) => {
+    setEditTarget(sale);
+    setEditForm({
+      quantity: sale.quantity,
+      finalPrice: sale.finalPrice,
+      status: sale.status,
+      customerName: sale.customerName || "",
+      paymentMethodId: sale.paymentMethod?.id || "cash",
+    });
   };
 
-  const handleUpdateSale = async (id: string, updatedData: UpdateSaleBody) => {
+  const handleSaveUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTarget) return;
+    setIsSaving(true);
     try {
-      // loading state
-      await updateSale(id, updatedData);
+      await updateSale(editTarget.id, {
+        quantity: editForm.quantity,
+        finalPrice: editForm.finalPrice,
+        status: editForm.status,
+        customerName: editForm.customerName || null,
+        paymentMethodId: editForm.paymentMethodId,
+      });
       await loadSales();
+      setEditTarget(null);
     } catch (error) {
       console.error("Failed to update sale", error);
       alert(
@@ -59,6 +82,27 @@ export default function SalesPage() {
           ? error.message
           : "Não foi possível atualizar a venda.",
       );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await deleteSale(deleteTarget.id);
+      await loadSales();
+      setDeleteTarget(null);
+    } catch (error) {
+      console.error("Failed to delete sale", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível excluir a venda.",
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -339,12 +383,54 @@ export default function SalesPage() {
                         variant={getStatusVariant(sale.status)}
                       />
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="text-on-surface-variant hover:text-secondary active:scale-95 transition-transform">
+                    <td className="px-6 py-4 text-right relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenuId(activeMenuId === sale.id ? null : sale.id);
+                        }}
+                        className="text-on-surface-variant hover:text-secondary active:scale-95 transition-transform cursor-pointer"
+                      >
                         <span className="material-symbols-outlined">
                           more_vert
                         </span>
                       </button>
+                      {activeMenuId === sale.id && (
+                        <>
+                          {/* Invisible overlay to close menu on click outside */}
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenuId(null);
+                            }}
+                          />
+                          <div className="absolute right-6 top-12 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg py-1 w-40 z-20 animate-in fade-in zoom-in-95 duration-100 text-left">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditModal(sale);
+                                setActiveMenuId(null);
+                              }}
+                              className="w-full px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low flex items-center gap-2 cursor-pointer transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">edit</span>
+                              Editar
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteTarget(sale);
+                                setActiveMenuId(null);
+                              }}
+                              className="w-full px-4 py-2 text-sm text-error hover:bg-error-container/20 flex items-center gap-2 cursor-pointer transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                              Excluir
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -391,6 +477,227 @@ export default function SalesPage() {
           </div>
         </div>
       )}
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={editTarget !== null}
+        onClose={() => setEditTarget(null)}
+        title="Editar Venda"
+        titleIcon="edit"
+        titleIconColor="text-secondary"
+        size="md"
+      >
+        {editTarget && (
+          <form onSubmit={handleSaveUpdate} className="flex flex-col gap-4">
+            {/* Read-only Product info */}
+            <div>
+              <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">
+                Produto
+              </label>
+              <div className="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2.5 text-body-md text-on-surface-variant font-semibold flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
+                {editTarget.product?.name || "Produto não identificado"}
+              </div>
+            </div>
+
+            {/* Customer Name */}
+            <div>
+              <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">
+                Cliente
+              </label>
+              <input
+                type="text"
+                value={editForm.customerName}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, customerName: e.target.value })
+                }
+                placeholder="Nome do cliente (Opcional)"
+                className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
+              />
+            </div>
+
+            {/* Quantity and finalPrice Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">
+                  Quantidade
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  value={editForm.quantity}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      quantity: Math.max(1, parseInt(e.target.value) || 1),
+                    })
+                  }
+                  className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all text-right font-semibold font-data-tabular"
+                />
+              </div>
+
+              <div>
+                <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">
+                  Preço Unitário (R$)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  required
+                  value={editForm.finalPrice}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      finalPrice: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all text-right font-semibold font-data-tabular"
+                />
+              </div>
+            </div>
+
+            {/* Sale Status */}
+            <div>
+              <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">
+                Status da Venda
+              </label>
+              <div className="relative">
+                <select
+                  value={editForm.status}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      status: e.target.value as SaleStatus,
+                    })
+                  }
+                  className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all appearance-none font-semibold"
+                >
+                  <option value="COMPLETED">Concluída (COMPLETED)</option>
+                  <option value="PENDING">Pendente (PENDING)</option>
+                  <option value="LOSS">Perda (LOSS)</option>
+                  <option value="RETURNED">Devolvida (RETURNED)</option>
+                </select>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
+                  arrow_drop_down
+                </span>
+              </div>
+            </div>
+
+            {/* Payment Method */}
+            <div className="space-y-2">
+              <label className="block font-label-sm text-label-sm text-on-surface-variant font-medium">
+                Método de pagamento
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {[
+                  { id: "cash", name: "Dinheiro", icon: "payments" },
+                  { id: "pix", name: "Pix", icon: "send_money" },
+                  { id: "credit_card", name: "Cartão", icon: "account_balance_wallet" },
+                  { id: "other", name: "Outros", icon: "more_horiz" },
+                ].map((method) => (
+                  <label key={method.id} className="cursor-pointer relative">
+                    <input
+                      className="peer sr-only"
+                      name="edit-payment"
+                      type="radio"
+                      value={method.id}
+                      checked={editForm.paymentMethodId === method.id}
+                      onChange={() =>
+                        setEditForm({ ...editForm, paymentMethodId: method.id })
+                      }
+                    />
+                    <div className="w-full h-full bg-surface border border-outline-variant rounded-lg py-2 flex flex-col items-center justify-center gap-1 peer-checked:border-secondary peer-checked:bg-surface-container peer-checked:text-secondary transition-all text-on-surface-variant hover:bg-surface-container-low">
+                      <span className="material-symbols-outlined text-[20px]">{method.icon}</span>
+                      <span className="text-[11px] font-semibold">{method.name}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions in Form Footer */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant mt-2">
+              <button
+                type="button"
+                onClick={() => setEditTarget(null)}
+                disabled={isSaving}
+                className="px-4 py-2 rounded-lg border border-outline text-on-surface-variant font-label-sm hover:bg-surface-container-low transition-colors cursor-pointer disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="px-4 py-2 rounded-lg bg-secondary text-on-secondary font-label-sm font-semibold hover:opacity-90 transition-colors cursor-pointer disabled:opacity-75 flex items-center gap-2"
+              >
+                {isSaving && (
+                  <span className="material-symbols-outlined text-[16px] animate-spin">
+                    progress_activity
+                  </span>
+                )}
+                Salvar Alterações
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Delete Modal */}
+      <Modal
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        title="Confirmar Exclusão"
+        titleIcon="warning"
+        titleIconColor="text-error"
+        size="md"
+      >
+        {deleteTarget && (
+          <div className="flex flex-col gap-4">
+            <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Tem certeza que deseja excluir a venda do produto{" "}
+              <span className="font-semibold text-on-surface">
+                {deleteTarget.product?.name}
+              </span>{" "}
+              realizada em{" "}
+              <span className="font-semibold text-on-surface">
+                {formatDate(deleteTarget.createdAt)}
+              </span>
+              ?
+            </p>
+            <div className="font-body-md text-body-md text-on-surface-variant leading-relaxed text-sm bg-surface-container border border-outline-variant p-3 rounded-lg flex items-start gap-2">
+              <span className="material-symbols-outlined text-error text-[20px] flex-shrink-0 mt-0.5">warning</span>
+              <span>
+                <strong>Atenção:</strong> A exclusão desta venda reverterá as alterações correspondentes no estoque do produto (+{deleteTarget.quantity} unidades). Esta ação não pode ser desfeita.
+              </span>
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant mt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-lg border border-outline text-on-surface-variant font-label-sm hover:bg-surface-container-low transition-colors cursor-pointer disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-lg bg-error text-on-error font-label-sm font-semibold hover:opacity-95 transition-colors cursor-pointer disabled:opacity-75 flex items-center gap-2"
+              >
+                {isDeleting && (
+                  <span className="material-symbols-outlined text-[16px] animate-spin">
+                    progress_activity
+                  </span>
+                )}
+                Excluir Venda
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

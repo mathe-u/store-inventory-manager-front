@@ -237,6 +237,7 @@ export async function calculatePricing(
 export type SaleStatus = "COMPLETED" | "LOSS" | "RETURNED" | "PENDING";
 
 export interface ApiPaymentMethod {
+  id: string;
   name: string;
   icon: string;
 }
