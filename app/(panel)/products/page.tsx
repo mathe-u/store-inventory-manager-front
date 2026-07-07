@@ -356,7 +356,10 @@ export default function ProductsPage() {
                         {p.name}
                       </td>
                       <td className="p-4">
-                        <Badge label={categoryName} color={categoryColor ?? undefined} />
+                        <Badge
+                          label={categoryName}
+                          color={categoryColor ?? undefined}
+                        />
                       </td>
                       <td className="p-4 text-right font-data-tabular text-on-surface-variant">
                         R$ {p.acquisitionCost.toFixed(2)}
@@ -367,7 +370,11 @@ export default function ProductsPage() {
                       <td className="p-4 text-right font-data-tabular text-on-surface">
                         <Badge
                           label={String(p.stockQuantity)}
-                          variant={p.stockQuantity <= p.minStockAlert ? "danger" : "success"}
+                          variant={
+                            p.stockQuantity <= p.minStockAlert
+                              ? "danger"
+                              : "success"
+                          }
                           tabular
                         />
                       </td>
@@ -379,7 +386,7 @@ export default function ProductsPage() {
                               handleRowClick(p);
                             }}
                             className="p-1.5 rounded hover:bg-surface-container-high text-secondary hover:text-on-secondary-fixed-variant transition-colors cursor-pointer"
-                            title="View Details"
+                            title="Ver detalhes"
                           >
                             <span className="material-symbols-outlined text-[20px]">
                               visibility
@@ -548,7 +555,10 @@ export default function ProductsPage() {
                     </div>
                   ) : (
                     <div>
-                      <Badge label={categoryName} color={categoryColor ?? undefined} />
+                      <Badge
+                        label={categoryName}
+                        color={categoryColor ?? undefined}
+                      />
                       <h3 className="font-headline-md text-headline-md text-on-surface font-bold mt-2 leading-snug">
                         {selectedProduct.name}
                       </h3>

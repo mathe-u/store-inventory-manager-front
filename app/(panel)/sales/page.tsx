@@ -20,9 +20,6 @@ export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Dropdown Menu State
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-
   // Edit Modal State
   const [editTarget, setEditTarget] = useState<ApiSale | null>(null);
   const [editForm, setEditForm] = useState({
@@ -125,11 +122,15 @@ export default function SalesPage() {
 
   const getStatusVariant = (status: SaleStatus): BadgeVariant => {
     switch (status) {
-      case "COMPLETED": return "success";
-      case "PENDING":   return "warning";
+      case "COMPLETED":
+        return "success";
+      case "PENDING":
+        return "warning";
       case "RETURNED":
-      case "LOSS":      return "danger";
-      default:          return "default";
+      case "LOSS":
+        return "danger";
+      default:
+        return "default";
     }
   };
 
@@ -279,7 +280,7 @@ export default function SalesPage() {
         </button> */}
       </SearchFilterBar>
 
-      {/* Table */}
+      {/* Sales Table */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden mb-6">
         {isLoading ? (
           <LoadingState message="Carregando vendas..." />
@@ -322,7 +323,7 @@ export default function SalesPage() {
                   <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-center">
                     Status
                   </th>
-                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-right">
+                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-center">
                     Ações
                   </th>
                 </tr>
@@ -383,54 +384,33 @@ export default function SalesPage() {
                         variant={getStatusVariant(sale.status)}
                       />
                     </td>
-                    <td className="px-6 py-4 text-right relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveMenuId(activeMenuId === sale.id ? null : sale.id);
-                        }}
-                        className="text-on-surface-variant hover:text-secondary active:scale-95 transition-transform cursor-pointer"
-                      >
-                        <span className="material-symbols-outlined">
-                          more_vert
-                        </span>
-                      </button>
-                      {activeMenuId === sale.id && (
-                        <>
-                          {/* Invisible overlay to close menu on click outside */}
-                          <div
-                            className="fixed inset-0 z-10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveMenuId(null);
-                            }}
-                          />
-                          <div className="absolute right-6 top-12 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg py-1 w-40 z-20 animate-in fade-in zoom-in-95 duration-100 text-left">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditModal(sale);
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low flex items-center gap-2 cursor-pointer transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">edit</span>
-                              Editar
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteTarget(sale);
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full px-4 py-2 text-sm text-error hover:bg-error-container/20 flex items-center gap-2 cursor-pointer transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">delete</span>
-                              Excluir
-                            </button>
-                          </div>
-                        </>
-                      )}
+                    <td className="px-6 py-4 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditModal(sale);
+                          }}
+                          className="p-1.5 rounded hover:bg-surface-container-high text-secondary hover:text-on-secondary-fixed-variant transition-colors cursor-pointer"
+                          title="Editar"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">
+                            edit
+                          </span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTarget(sale);
+                          }}
+                          className="p-1.5 rounded hover:bg-error-container text-outline hover:text-error transition-colors cursor-pointer"
+                          title="Remover"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">
+                            delete
+                          </span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -495,7 +475,9 @@ export default function SalesPage() {
                 Produto
               </label>
               <div className="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2.5 text-body-md text-on-surface-variant font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  shopping_bag
+                </span>
                 {editTarget.product?.name || "Produto não identificado"}
               </div>
             </div>
@@ -594,7 +576,11 @@ export default function SalesPage() {
                 {[
                   { id: "cash", name: "Dinheiro", icon: "payments" },
                   { id: "pix", name: "Pix", icon: "send_money" },
-                  { id: "credit_card", name: "Cartão", icon: "account_balance_wallet" },
+                  {
+                    id: "credit_card",
+                    name: "Cartão",
+                    icon: "account_balance_wallet",
+                  },
                   { id: "other", name: "Outros", icon: "more_horiz" },
                 ].map((method) => (
                   <label key={method.id} className="cursor-pointer relative">
@@ -609,8 +595,12 @@ export default function SalesPage() {
                       }
                     />
                     <div className="w-full h-full bg-surface border border-outline-variant rounded-lg py-2 flex flex-col items-center justify-center gap-1 peer-checked:border-secondary peer-checked:bg-surface-container peer-checked:text-secondary transition-all text-on-surface-variant hover:bg-surface-container-low">
-                      <span className="material-symbols-outlined text-[20px]">{method.icon}</span>
-                      <span className="text-[11px] font-semibold">{method.name}</span>
+                      <span className="material-symbols-outlined text-[20px]">
+                        {method.icon}
+                      </span>
+                      <span className="text-[11px] font-semibold">
+                        {method.name}
+                      </span>
                     </div>
                   </label>
                 ))}
@@ -667,9 +657,14 @@ export default function SalesPage() {
               ?
             </p>
             <div className="font-body-md text-body-md text-on-surface-variant leading-relaxed text-sm bg-surface-container border border-outline-variant p-3 rounded-lg flex items-start gap-2">
-              <span className="material-symbols-outlined text-error text-[20px] flex-shrink-0 mt-0.5">warning</span>
+              <span className="material-symbols-outlined text-error text-[20px] flex-shrink-0 mt-0.5">
+                warning
+              </span>
               <span>
-                <strong>Atenção:</strong> A exclusão desta venda reverterá as alterações correspondentes no estoque do produto (+{deleteTarget.quantity} unidades). Esta ação não pode ser desfeita.
+                <strong>Atenção:</strong> A exclusão desta venda reverterá as
+                alterações correspondentes no estoque do produto (+
+                {deleteTarget.quantity} unidades). Esta ação não pode ser
+                desfeita.
               </span>
             </div>
             <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant mt-2">
