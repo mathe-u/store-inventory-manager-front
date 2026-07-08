@@ -20,6 +20,9 @@ export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // search state
+  const [searchTerm, setSearchTerm] = useState("");
+
   // Edit Modal State
   const [editTarget, setEditTarget] = useState<ApiSale | null>(null);
   const [editForm, setEditForm] = useState({
@@ -134,6 +137,21 @@ export default function SalesPage() {
     }
   };
 
+  const filteredSales = sales.filter((sale) => {
+    const term = searchTerm.toLowerCase();
+    const productName = sale.product?.name?.toLowerCase() || "";
+    const customerName = sale.customerName?.toLowerCase() || "";
+    const categoryName = sale.product?.category?.name?.toLowerCase() || "";
+    const paymentName = sale.paymentMethod?.name?.toLowerCase() || "";
+
+    return (
+      productName.includes(term) ||
+      customerName.includes(term) ||
+      categoryName.includes(term) ||
+      paymentName.includes(term)
+    );
+  });
+
   return (
     <div className="max-w-container-max mx-auto flex flex-col gap-section-gap">
       {/* Page Header */}
@@ -243,8 +261,10 @@ export default function SalesPage() {
       {/* Filters */}
       <SearchFilterBar
         placeholder="Buscar cliente, produto ..."
-        value={""}
-        onChange={(e) => {}}
+        value={searchTerm}
+        onChange={setSearchTerm}
+        totalCountText={`Mostrando ${filteredSales.length} de ${sales.length} transações.`}
+        isLoading={isLoading}
       >
         {/* <div className="flex items-center gap-2">
           <span className="text-label-sm font-label-sm text-on-surface-variant">
@@ -284,7 +304,7 @@ export default function SalesPage() {
       <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden mb-6">
         {isLoading ? (
           <LoadingState message="Carregando vendas..." />
-        ) : sales.length === 0 ? (
+        ) : filteredSales.length === 0 ? (
           <EmptyState
             icon="payments"
             title="Nenhuma venda encontrada"
@@ -329,7 +349,7 @@ export default function SalesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
-                {sales.map((sale, index) => (
+                {filteredSales.map((sale, index) => (
                   <tr
                     key={sale.id}
                     className={`${index % 2 !== 0 ? "bg-surface" : "bg-transparent"} hover:bg-surface-container-low hover:border-l-4 hover:border-l-secondary transition-all`}
@@ -421,12 +441,12 @@ export default function SalesPage() {
       </div>
 
       {/* Pagination */}
-      {sales.length > 0 && (
+      {filteredSales.length > 0 && (
         <div className="flex items-center justify-between bg-surface-container-lowest border border-outline-variant rounded-xl px-6 py-4 shadow-sm">
           <div className="text-on-surface-variant text-body-md">
             Mostrando{" "}
             <span className="font-bold text-on-surface">
-              1 - {sales.length}
+              1 - {filteredSales.length}
             </span>{" "}
             de <span className="font-bold text-on-surface">{sales.length}</span>{" "}
             transações
