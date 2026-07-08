@@ -441,7 +441,7 @@ export default function SalesPage() {
       </div>
 
       {/* Pagination */}
-      {filteredSales.length > 0 && (
+      {/* {filteredSales.length > 0 && (
         <div className="flex items-center justify-between bg-surface-container-lowest border border-outline-variant rounded-xl px-6 py-4 shadow-sm">
           <div className="text-on-surface-variant text-body-md">
             Mostrando{" "}
@@ -476,7 +476,7 @@ export default function SalesPage() {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Edit Modal */}
       <Modal
