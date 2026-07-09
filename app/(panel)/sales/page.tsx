@@ -119,10 +119,6 @@ export default function SalesPage() {
     });
   };
 
-  const formatCurrency = (value: number) => {
-    return `R$ ${value.toFixed(2)}`;
-  };
-
   const getStatusVariant = (status: SaleStatus): BadgeVariant => {
     switch (status) {
       case "COMPLETED":
@@ -134,6 +130,21 @@ export default function SalesPage() {
         return "danger";
       default:
         return "default";
+    }
+  };
+
+  const getStatusLabel = (status: SaleStatus) => {
+    switch (status) {
+      case "COMPLETED":
+        return "Concluída";
+      case "PENDING":
+        return "Pendente";
+      case "LOSS":
+        return "Perda";
+      case "RETURNED":
+        return "Devolvida";
+      default:
+        return status;
     }
   };
 
@@ -301,7 +312,7 @@ export default function SalesPage() {
       </SearchFilterBar>
 
       {/* Sales Table */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden mb-6">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
         {isLoading ? (
           <LoadingState message="Carregando vendas..." />
         ) : filteredSales.length === 0 ? (
@@ -319,45 +330,31 @@ export default function SalesPage() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse table-auto">
-              <thead className="bg-surface text-on-surface-variant border-b border-outline-variant">
-                <tr>
-                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
-                    Product
-                  </th>
-                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
-                    Cliente
-                  </th>
-                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider">
-                    Forma de pagamento
-                  </th>
-                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-right">
-                    Receita
-                  </th>
-                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-right">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-surface-container border-b border-outline-variant text-on-surface font-label-sm text-label-sm">
+                  <th className="p-4 font-semibold">Data</th>
+                  <th className="p-4 font-semibold">Produto</th>
+                  <th className="p-4 font-semibold">Cliente</th>
+                  <th className="p-4 font-semibold">Pagamento</th>
+                  <th className="p-4 font-semibold text-right">Receita</th>
+                  <th className="p-4 font-semibold text-right">
                     Lucro Líquido
                   </th>
-                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-center">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 font-label-sm text-label-sm uppercase tracking-wider text-center">
-                    Ações
-                  </th>
+                  <th className="p-4 font-semibold text-center">Status</th>
+                  <th className="p-4 font-semibold text-center">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-outline-variant">
-                {filteredSales.map((sale, index) => (
+              <tbody>
+                {filteredSales.map((sale) => (
                   <tr
                     key={sale.id}
-                    className={`${index % 2 !== 0 ? "bg-surface" : "bg-transparent"} hover:bg-surface-container-low hover:border-l-4 hover:border-l-secondary transition-all`}
+                    className="border-b border-outline-variant/60 hover:bg-surface-container-low transition-colors"
                   >
-                    <td className="px-6 py-4 font-data-tabular text-data-tabular whitespace-nowrap">
+                    <td className="p-4 font-data-tabular text-on-surface-variant text-sm whitespace-nowrap">
                       {formatDate(sale.createdAt)}
                     </td>
-                    <td className="px-6 py-4 min-w-[200px]">
+                    <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-surface border border-outline-variant overflow-hidden flex-shrink-0">
                           <img
@@ -367,44 +364,55 @@ export default function SalesPage() {
                           />
                         </div>
                         <div>
-                          <p className="font-semibold text-on-surface">
+                          <p className="font-medium text-on-surface text-sm">
                             {sale.product?.name}
                           </p>
-                          <p className="text-xs text-on-surface-variant font-data-tabular">
-                            {sale.product?.category?.name || ""}
-                          </p>
+                          {sale.product?.category && (
+                            <div className="mt-0.5">
+                              <Badge
+                                label={sale.product.category.name}
+                                color={sale.product.category.color ?? undefined}
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-medium text-on-surface whitespace-nowrap">
-                      {sale.customerName || "Cliente Walk-in"}
+                    <td className="p-4 text-on-surface-variant text-sm whitespace-nowrap">
+                      {sale.customerName || (
+                        <span className="italic opacity-50">
+                          Cliente Balcão
+                        </span>
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 text-on-surface-variant">
+                    <td className="p-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-on-surface-variant text-sm">
                         <span className="material-symbols-outlined text-[20px]">
                           {sale.paymentMethod?.icon || "payments"}
                         </span>
-                        <span className="text-body-md">
-                          {sale.paymentMethod?.name || "Standard"}
-                        </span>
+                        <span>{sale.paymentMethod?.name || "Dinheiro"}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right font-data-tabular font-bold whitespace-nowrap">
-                      {formatCurrency(sale.finalPrice)}
+                    <td className="p-4 text-right font-data-tabular text-on-surface whitespace-nowrap">
+                      R$ {sale.finalPrice.toFixed(2)}
                     </td>
                     <td
-                      className={`px-6 py-4 text-right font-data-tabular whitespace-nowrap ${sale.calculatedProfit >= 0 ? "text-on-tertiary-container" : "text-on-error-container"}`}
+                      className={`p-4 text-right font-data-tabular font-semibold whitespace-nowrap text-sm ${
+                        sale.calculatedProfit >= 0
+                          ? "text-on-tertiary-container"
+                          : "text-on-error-container"
+                      }`}
                     >
-                      {sale.calculatedProfit >= 0 ? "+" : "-"}{" "}
-                      {formatCurrency(Math.abs(sale.calculatedProfit))}
+                      {sale.calculatedProfit >= 0 ? "+" : "-"} R${" "}
+                      {Math.abs(sale.calculatedProfit).toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 text-center whitespace-nowrap">
+                    <td className="p-4 text-center whitespace-nowrap">
                       <Badge
-                        label={sale.status.toLowerCase()}
+                        label={getStatusLabel(sale.status)}
                         variant={getStatusVariant(sale.status)}
                       />
                     </td>
-                    <td className="px-6 py-4 text-center whitespace-nowrap">
+                    <td className="p-4 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={(e) => {
@@ -439,44 +447,6 @@ export default function SalesPage() {
           </div>
         )}
       </div>
-
-      {/* Pagination */}
-      {/* {filteredSales.length > 0 && (
-        <div className="flex items-center justify-between bg-surface-container-lowest border border-outline-variant rounded-xl px-6 py-4 shadow-sm">
-          <div className="text-on-surface-variant text-body-md">
-            Mostrando{" "}
-            <span className="font-bold text-on-surface">
-              1 - {filteredSales.length}
-            </span>{" "}
-            de <span className="font-bold text-on-surface">{sales.length}</span>{" "}
-            transações
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low disabled:opacity-30 transition-all active:scale-95"
-              disabled
-            >
-              <span className="material-symbols-outlined">chevron_left</span>
-            </button>
-            <button className="w-10 h-10 rounded-lg bg-secondary text-on-secondary font-bold active:scale-95 transition-all">
-              1
-            </button>
-            <button className="w-10 h-10 rounded-lg hover:bg-surface-container-low text-on-surface font-medium transition-all active:scale-95">
-              2
-            </button>
-            <button className="w-10 h-10 rounded-lg hover:bg-surface-container-low text-on-surface font-medium transition-all active:scale-95">
-              3
-            </button>
-            <span className="text-on-surface-variant px-2">...</span>
-            <button className="w-10 h-10 rounded-lg hover:bg-surface-container-low text-on-surface font-medium transition-all active:scale-95">
-              312
-            </button>
-            <button className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all active:scale-95">
-              <span className="material-symbols-outlined">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      )} */}
 
       {/* Edit Modal */}
       <Modal
