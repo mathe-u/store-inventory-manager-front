@@ -242,6 +242,10 @@ export interface ApiPaymentMethod {
   icon: string;
 }
 
+export async function getPaymentMethods(): Promise<ApiPaymentMethod[]> {
+  return apiFetch<ApiPaymentMethod[]>("payments/");
+}
+
 export interface ApiSale {
   id: string;
   productId: string;

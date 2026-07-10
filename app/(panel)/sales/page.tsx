@@ -9,6 +9,8 @@ import {
   SaleStatus,
   deleteSale,
   updateSale,
+  getPaymentMethods,
+  ApiPaymentMethod,
 } from "@/src/lib/api";
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
@@ -19,6 +21,7 @@ import Modal from "@/src/components/Modal";
 export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [paymentMethods, setPaymentMethods] = useState<ApiPaymentMethod[]>([]);
 
   // search state
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,6 +50,15 @@ export default function SalesPage() {
       console.error("Failed to fetch sales", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadPaymentMethods = async () => {
+    try {
+      const data = await getPaymentMethods();
+      setPaymentMethods(data);
+    } catch (error) {
+      console.error("Failed to fetch payment methods", error);
     }
   };
 
@@ -109,6 +121,7 @@ export default function SalesPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadSales();
+    loadPaymentMethods();
   }, []);
 
   const formatDate = (dateString: string) => {
@@ -563,16 +576,7 @@ export default function SalesPage() {
                 Método de pagamento
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {[
-                  { id: "cash", name: "Dinheiro", icon: "payments" },
-                  { id: "pix", name: "Pix", icon: "send_money" },
-                  {
-                    id: "credit_card",
-                    name: "Cartão",
-                    icon: "account_balance_wallet",
-                  },
-                  { id: "other", name: "Outros", icon: "more_horiz" },
-                ].map((method) => (
+                {paymentMethods.map((method) => (
                   <label key={method.id} className="cursor-pointer relative">
                     <input
                       className="peer sr-only"
@@ -586,7 +590,7 @@ export default function SalesPage() {
                     />
                     <div className="w-full h-full bg-surface border border-outline-variant rounded-lg py-2 flex flex-col items-center justify-center gap-1 peer-checked:border-secondary peer-checked:bg-surface-container peer-checked:text-secondary transition-all text-on-surface-variant hover:bg-surface-container-low">
                       <span className="material-symbols-outlined text-[20px]">
-                        {method.icon}
+                        {method.icon || "payments"}
                       </span>
                       <span className="text-[11px] font-semibold">
                         {method.name}

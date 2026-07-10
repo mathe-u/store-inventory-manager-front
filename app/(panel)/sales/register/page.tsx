@@ -9,6 +9,8 @@ import {
   calculatePricing,
   ApiProduct,
   PricingResult,
+  getPaymentMethods,
+  ApiPaymentMethod,
 } from "@/src/lib/api";
 import PageHeader from "@/src/components/PageHeader";
 
@@ -47,9 +49,10 @@ export default function LogNewSale() {
     "COMPLETED" | "LOSS" | "RETURNED" | "PENDING"
   >("COMPLETED");
 
-  // Mock Form Fields (Optional in UI but not sent to API)
+  // Form Fields State
   const [customerName, setCustomerName] = useState<string>("");
-  const [paymentMethod, setPaymentMethod] = useState<string>("cash");
+  const [paymentMethods, setPaymentMethods] = useState<ApiPaymentMethod[]>([]);
+  const [paymentMethodId, setPaymentMethodId] = useState<string>("cash");
 
   // Pricing Calculation State
   const [pricingResult, setPricingResult] = useState<PricingResult | null>(
@@ -73,6 +76,21 @@ export default function LogNewSale() {
         console.error(err);
         setProductsError("Falha ao carregar a lista de produtos.");
         setProductsLoading(false);
+      });
+  }, []);
+
+  // Fetch payment methods on mount
+  useEffect(() => {
+    getPaymentMethods()
+      .then((data) => {
+        setPaymentMethods(data);
+        if (data.length > 0) {
+          const hasCash = data.find((m) => m.id === "cash");
+          setPaymentMethodId(hasCash ? "cash" : data[0].id);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load payment methods", err);
       });
   }, []);
 
@@ -150,6 +168,8 @@ export default function LogNewSale() {
         quantity,
         finalPrice: priceNum,
         status: saleStatus,
+        customerName: customerName.trim() || null,
+        paymentMethodId,
       });
       router.push("/sales");
     } catch (err: any) {
@@ -405,84 +425,35 @@ export default function LogNewSale() {
               </div>
             </div>
 
-            {/* Payment Method (Bento Radio Group - Visual Form Field) */}
+            {/* Payment Method (Bento Radio Group) */}
             <div className="space-y-3">
               <label className="block font-label-sm text-label-sm text-on-surface-variant font-medium">
                 Método de pagamento
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <label className="cursor-pointer relative">
-                  <input
-                    className="peer sr-only"
-                    name="payment"
-                    type="radio"
-                    value="cash"
-                    checked={paymentMethod === "cash"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="w-full h-full bg-surface border border-outline-variant rounded-lg py-3 flex flex-col items-center justify-center gap-1 peer-checked:border-secondary peer-checked:bg-surface-container peer-checked:text-secondary transition-all text-on-surface-variant hover:bg-surface-container-low">
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      payments
-                    </span>
-                    <span className="font-label-sm text-label-sm">
-                      Dinheiro
-                    </span>
-                  </div>
-                </label>
-
-                <label className="cursor-pointer relative">
-                  <input
-                    className="peer sr-only"
-                    name="payment"
-                    type="radio"
-                    value="pix"
-                    checked={paymentMethod === "pix"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="w-full h-full bg-surface border border-outline-variant rounded-lg py-3 flex flex-col items-center justify-center gap-1 peer-checked:border-secondary peer-checked:bg-surface-container peer-checked:text-secondary transition-all text-on-surface-variant hover:bg-surface-container-low">
-                    <span className="material-symbols-outlined">
-                      send_money
-                    </span>
-                    <span className="font-label-sm text-label-sm">Pix</span>
-                  </div>
-                </label>
-
-                <label className="cursor-pointer relative">
-                  <input
-                    className="peer sr-only"
-                    name="payment"
-                    type="radio"
-                    value="credit_card"
-                    checked={paymentMethod === "credit_card"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="w-full h-full bg-surface border border-outline-variant rounded-lg py-3 flex flex-col items-center justify-center gap-1 peer-checked:border-secondary peer-checked:bg-surface-container peer-checked:text-secondary transition-all text-on-surface-variant hover:bg-surface-container-low">
-                    <span className="material-symbols-outlined">
-                      account_balance_wallet
-                    </span>
-                    <span className="font-label-sm text-label-sm">Cartão</span>
-                  </div>
-                </label>
-
-                <label className="cursor-pointer relative">
-                  <input
-                    className="peer sr-only"
-                    name="payment"
-                    type="radio"
-                    value="other"
-                    checked={paymentMethod === "other"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="w-full h-full bg-surface border border-outline-variant rounded-lg py-3 flex flex-col items-center justify-center gap-1 peer-checked:border-secondary peer-checked:bg-surface-container peer-checked:text-secondary transition-all text-on-surface-variant hover:bg-surface-container-low">
-                    <span className="material-symbols-outlined">
-                      more_horiz
-                    </span>
-                    <span className="font-label-sm text-label-sm">Outros</span>
-                  </div>
-                </label>
+                {paymentMethods.map((method) => (
+                  <label key={method.id} className="cursor-pointer relative">
+                    <input
+                      className="peer sr-only"
+                      name="payment"
+                      type="radio"
+                      value={method.id}
+                      checked={paymentMethodId === method.id}
+                      onChange={() => setPaymentMethodId(method.id)}
+                    />
+                    <div className="w-full h-full bg-surface border border-outline-variant rounded-lg py-3 flex flex-col items-center justify-center gap-1 peer-checked:border-secondary peer-checked:bg-surface-container peer-checked:text-secondary transition-all text-on-surface-variant hover:bg-surface-container-low">
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontVariationSettings: paymentMethodId === method.id ? "'FILL' 1" : undefined }}
+                      >
+                        {method.icon || "payments"}
+                      </span>
+                      <span className="font-label-sm text-label-sm">
+                        {method.name}
+                      </span>
+                    </div>
+                  </label>
+                ))}
               </div>
             </div>
 
