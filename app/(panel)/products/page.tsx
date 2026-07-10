@@ -53,8 +53,17 @@ function deriveNetProfit(product: ApiProduct, sellingPrice: number): number {
 export default function ProductsPage() {
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+
+  // Debounce the search term to avoid hitting the API too frequently
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   // Modals & Panels State
   const [selectedProduct, setSelectedProduct] = useState<ApiProduct | null>(
@@ -202,11 +211,12 @@ export default function ProductsPage() {
     }
   };
 
-  const loadProducts = useCallback(async () => {
+  const loadProducts = useCallback(async (search?: string) => {
     setIsLoading(true);
     setLoadError("");
     try {
-      const data = await getProducts();
+      const searchVal = typeof search === "string" ? search : debouncedSearchTerm;
+      const data = await getProducts(searchVal);
       setProducts(data);
     } catch (err) {
       setLoadError(
@@ -215,23 +225,13 @@ export default function ProductsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [debouncedSearchTerm]);
 
   useEffect(() => {
     loadProducts();
-  }, [loadProducts]);
+  }, [loadProducts, debouncedSearchTerm]);
 
-  // Filter products based on search term
-  const filteredProducts = products.filter((p) => {
-    const meta = parseMetadata(p.metadata);
-    const categoryName =
-      p.category?.name ??
-      (typeof meta.category === "string" ? meta.category : "");
-    return (
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      categoryName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
+  const filteredProducts = products;
 
   const handleDeleteClick = (product: ApiProduct, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -285,7 +285,11 @@ export default function ProductsPage() {
         placeholder="Filtrar por nome, Id ou categoria..."
         value={searchTerm}
         onChange={setSearchTerm}
-        totalCountText={`Mostrando ${filteredProducts.length} de ${products.length} produtos`}
+        totalCountText={
+          searchTerm
+            ? `Mostrando ${products.length} resultado(s)`
+            : `Total: ${products.length} produtos`
+        }
         isLoading={isLoading}
       />
 

@@ -149,8 +149,11 @@ export interface CreateProductBody {
   categoryId?: string;
 }
 
-export async function getProducts(): Promise<ApiProduct[]> {
-  return apiFetch<ApiProduct[]>("products/");
+export async function getProducts(search?: string): Promise<ApiProduct[]> {
+  const path = search
+    ? `products/?search=${encodeURIComponent(search)}`
+    : "products/";
+  return apiFetch<ApiProduct[]>(path);
 }
 
 export async function getProductById(id: string): Promise<ApiProductDetail> {
