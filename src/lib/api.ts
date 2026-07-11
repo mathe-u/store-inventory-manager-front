@@ -78,8 +78,11 @@ export interface UpdateCategoryBody {
   color?: string;
 }
 
-export async function getCategories(): Promise<ApiCategory[]> {
-  return apiFetch<ApiCategory[]>("categories/");
+export async function getCategories(search?: string): Promise<ApiCategory[]> {
+  const path = search
+    ? `categories/?search=${encodeURIComponent(search)}`
+    : "categories/";
+  return apiFetch<ApiCategory[]>(path);
 }
 
 export async function getCategoryById(id: string): Promise<ApiCategory> {

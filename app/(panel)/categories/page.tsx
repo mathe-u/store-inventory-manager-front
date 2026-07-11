@@ -134,8 +134,17 @@ function CategoryForm({
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+
+  // Debounce the search term to avoid hitting the API too frequently
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState<FormState>(EMPTY_FORM);
@@ -150,11 +159,12 @@ export default function CategoriesPage() {
   const [deleteTarget, setDeleteTarget] = useState<ApiCategory | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const loadCategories = useCallback(async () => {
+  const loadCategories = useCallback(async (search?: string) => {
     setIsLoading(true);
     setLoadError("");
     try {
-      const data = await getCategories();
+      const searchVal = typeof search === "string" ? search : debouncedSearchTerm;
+      const data = await getCategories(searchVal);
       setCategories(data);
     } catch (err) {
       console.error("Failed to load categories:", err);
@@ -164,18 +174,14 @@ export default function CategoriesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [debouncedSearchTerm]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     loadCategories();
-  }, [loadCategories]);
+  }, [loadCategories, debouncedSearchTerm]);
 
-  const filtered = categories.filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (c.description ?? "").toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filtered = categories;
 
   const openCreate = () => {
     setCreateForm(EMPTY_FORM);
@@ -291,7 +297,11 @@ export default function CategoriesPage() {
         placeholder="Filtrar por nome ou descrição..."
         value={searchTerm}
         onChange={setSearchTerm}
-        totalCountText={`${filtered.length} de ${categories.length} categorias`}
+        totalCountText={
+          searchTerm
+            ? `Mostrando ${categories.length} resultado(s)`
+            : `Total: ${categories.length} categorias`
+        }
         isLoading={isLoading}
       />
 
