@@ -289,9 +289,18 @@ export interface SaleMutationResponse {
 
 /**
  * Retorna o histórico completo de vendas, incluindo os dados dos produtos atrelados.
+ * @param productName - Filtro opcional pelo nome do produto (server-side).
+ * @param status - Filtro opcional pelo status da venda (server-side).
  */
-export async function getSales(): Promise<ApiSale[]> {
-  return apiFetch<ApiSale[]>("sales/"); // Atenção: certifique-se de que o prefixo no fastify seja /sales
+export async function getSales(
+  productName?: string,
+  status?: SaleStatus,
+): Promise<ApiSale[]> {
+  const params = new URLSearchParams();
+  if (productName) params.set("productName", productName);
+  if (status) params.set("status", status);
+  const query = params.toString();
+  return apiFetch<ApiSale[]>(query ? `sales/?${query}` : "sales/");
 }
 
 /**

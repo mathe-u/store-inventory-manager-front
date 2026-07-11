@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import PageHeader from "@/src/components/PageHeader";
-import Link from "next/link";
 import {
   getSales,
   ApiSale,
@@ -25,6 +24,8 @@ export default function SalesPage() {
 
   // search state
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<SaleStatus | "">("");
 
   // Edit Modal State
   const [editTarget, setEditTarget] = useState<ApiSale | null>(null);
@@ -41,10 +42,23 @@ export default function SalesPage() {
   const [deleteTarget, setDeleteTarget] = useState<ApiSale | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const loadSales = async () => {
+  // Debounce the search term to avoid hitting the API on every keystroke
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  const loadSales = async (productName?: string) => {
     setIsLoading(true);
     try {
-      const data = await getSales();
+      const searchVal =
+        typeof productName === "string" ? productName : debouncedSearchTerm;
+      const data = await getSales(
+        searchVal || undefined,
+        statusFilter || undefined,
+      );
       setSales(data);
     } catch (error) {
       console.error("Failed to fetch sales", error);
@@ -122,7 +136,8 @@ export default function SalesPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadSales();
     loadPaymentMethods();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm, statusFilter]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR", {
@@ -161,20 +176,7 @@ export default function SalesPage() {
     }
   };
 
-  const filteredSales = sales.filter((sale) => {
-    const term = searchTerm.toLowerCase();
-    const productName = sale.product?.name?.toLowerCase() || "";
-    const customerName = sale.customerName?.toLowerCase() || "";
-    const categoryName = sale.product?.category?.name?.toLowerCase() || "";
-    const paymentName = sale.paymentMethod?.name?.toLowerCase() || "";
-
-    return (
-      productName.includes(term) ||
-      customerName.includes(term) ||
-      categoryName.includes(term) ||
-      paymentName.includes(term)
-    );
-  });
+  const filteredSales = sales;
 
   return (
     <div className="max-w-container-max mx-auto flex flex-col gap-section-gap">
@@ -284,10 +286,14 @@ export default function SalesPage() {
 
       {/* Filters */}
       <SearchFilterBar
-        placeholder="Buscar cliente, produto ..."
+        placeholder="Buscar por nome do produto..."
         value={searchTerm}
         onChange={setSearchTerm}
-        totalCountText={`Mostrando ${filteredSales.length} de ${sales.length} transações.`}
+        totalCountText={
+          searchTerm || statusFilter
+            ? `Mostrando ${sales.length} resultado(s)`
+            : `Total: ${sales.length} transações`
+        }
         isLoading={isLoading}
       >
         {/* <div className="flex items-center gap-2">
@@ -313,11 +319,14 @@ export default function SalesPage() {
             <option value="RETURNED">Devolvido</option>
             <option value="LOSS">Prejuízo</option>
           </select>
+          <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">
+            arrow_drop_down
+          </span>
         </div>
 
         <button className="bg-primary text-on-primary px-6 py-2 rounded-lg font-semibold hover:opacity-90 active:scale-95 transition-all">
           Filtrar
-        </button>
+          </button>
 
         <button className="text-secondary font-semibold px-4 py-2 hover:bg-surface-container-low rounded-lg transition-all">
           Limpar
