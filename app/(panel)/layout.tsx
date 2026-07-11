@@ -162,7 +162,7 @@ export default function DashboardLayout({
               <Image
                 alt="User profile photo"
                 className="object-cover"
-                src="/user_profile.png"
+                src="/next.svg"
                 fill
                 sizes="40px"
               />
@@ -172,7 +172,7 @@ export default function DashboardLayout({
                 Matheus Silva
               </p>
               <p className="font-label-sm text-label-sm text-on-surface-variant">
-                Tier Pro
+                Admin
               </p>
             </div>
           </div>
