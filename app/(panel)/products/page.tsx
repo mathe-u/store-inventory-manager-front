@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import PageHeader from "@/src/components/PageHeader";
-import Link from "next/link";
 import {
   getProducts,
   deleteProduct,
@@ -18,6 +17,7 @@ import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
 import Badge from "@/src/components/Badge";
 import ErrorAlert from "@/src/components/ErrorAlert";
+import ProductImage from "@/src/components/ProductImage";
 
 // Helper: parse the raw metadata JSON string from the API
 function parseMetadata(raw: string): Record<string, unknown> {
@@ -211,21 +211,25 @@ export default function ProductsPage() {
     }
   };
 
-  const loadProducts = useCallback(async (search?: string) => {
-    setIsLoading(true);
-    setLoadError("");
-    try {
-      const searchVal = typeof search === "string" ? search : debouncedSearchTerm;
-      const data = await getProducts(searchVal);
-      setProducts(data);
-    } catch (err) {
-      setLoadError(
-        err instanceof Error ? err.message : "Failed to load products.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [debouncedSearchTerm]);
+  const loadProducts = useCallback(
+    async (search?: string) => {
+      setIsLoading(true);
+      setLoadError("");
+      try {
+        const searchVal =
+          typeof search === "string" ? search : debouncedSearchTerm;
+        const data = await getProducts(searchVal);
+        setProducts(data);
+      } catch (err) {
+        setLoadError(
+          err instanceof Error ? err.message : "Failed to load products.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [debouncedSearchTerm],
+  );
 
   useEffect(() => {
     loadProducts();
@@ -326,6 +330,7 @@ export default function ProductsPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container border-b border-outline-variant text-on-surface font-label-sm text-label-sm">
+                  <th className="p-4 font-semibold w-14"></th>
                   <th className="p-4 font-semibold">Nome</th>
                   <th className="p-4 font-semibold">Categoria</th>
                   <th className="p-4 font-semibold text-right">Custo</th>
@@ -356,6 +361,9 @@ export default function ProductsPage() {
                       onClick={() => handleRowClick(p)}
                       className="border-b border-outline-variant/60 hover:bg-surface-container-low transition-colors cursor-pointer"
                     >
+                      <td className="p-4">
+                        <ProductImage url={p.imageUrl} name={p.name} />
+                      </td>
                       <td className="p-4 font-medium text-on-surface">
                         {p.name}
                       </td>

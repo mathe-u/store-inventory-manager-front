@@ -16,6 +16,7 @@ import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
 import Badge, { BadgeVariant } from "@/src/components/Badge";
 import Modal from "@/src/components/Modal";
+import ProductImage from "@/src/components/ProductImage";
 
 export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
@@ -378,13 +379,10 @@ export default function SalesPage() {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-surface border border-outline-variant overflow-hidden flex-shrink-0">
-                          <img
-                            className="w-full h-full object-cover"
-                            src={sale.product?.imageUrl || "/next.svg"}
-                            alt={sale.product?.name || "Produto"}
-                          />
-                        </div>
+                        <ProductImage
+                          url={sale.product?.imageUrl}
+                          name={sale.product?.name || "Produto"}
+                        />
                         <div>
                           <p className="font-medium text-on-surface text-sm">
                             {sale.product?.name}
