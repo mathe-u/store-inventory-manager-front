@@ -512,6 +512,24 @@ export default function ProductsPage() {
                 <div className="flex justify-between items-start border-b border-outline-variant pb-4 mb-6">
                   {isEditMode ? (
                     <div className="flex-1 mr-4 flex flex-col gap-3">
+                      {/* Imagem com botão de editar */}
+                      <div className="relative w-fit">
+                        <ProductImage
+                          url={selectedProduct.imageUrl}
+                          name={selectedProduct.name}
+                          size="lg"
+                        />
+                        <button
+                          type="button"
+                          title="Editar imagem (em breve)"
+                          className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-md hover:opacity-90 transition-opacity cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">
+                            edit
+                          </span>
+                        </button>
+                      </div>
+
                       <div className="flex items-center gap-2 text-on-surface-variant">
                         <span className="material-symbols-outlined text-secondary text-[20px]">
                           edit
@@ -566,14 +584,21 @@ export default function ProductsPage() {
                       </div>
                     </div>
                   ) : (
-                    <div>
-                      <Badge
-                        label={categoryName}
-                        color={categoryColor ?? undefined}
+                    <div className="flex items-start gap-4">
+                      <ProductImage
+                        url={selectedProduct.imageUrl}
+                        name={selectedProduct.name}
+                        size="lg"
                       />
-                      <h3 className="font-headline-md text-headline-md text-on-surface font-bold mt-2 leading-snug">
-                        {selectedProduct.name}
-                      </h3>
+                      <div>
+                        <Badge
+                          label={categoryName}
+                          color={categoryColor ?? undefined}
+                        />
+                        <h3 className="font-headline-md text-headline-md text-on-surface font-bold mt-2 leading-snug">
+                          {selectedProduct.name}
+                        </h3>
+                      </div>
                     </div>
                   )}
                   <button
