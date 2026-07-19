@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import PageHeader from "@/src/components/PageHeader";
 import {
   getProducts,
@@ -8,6 +8,7 @@ import {
   updateProduct,
   getCategories,
   calculatePricing,
+  uploadProductImage,
   type ApiProduct,
   type ApiCategory,
   type PricingResult,
@@ -83,6 +84,11 @@ export default function ProductsPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [saveEditError, setSaveEditError] = useState("");
+
+  // Image editing state
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState("");
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Edit Form Fields State
   const [editName, setEditName] = useState("");
@@ -170,7 +176,7 @@ export default function ProductsPage() {
     setIsEditMode(true);
   };
 
-  const handleSaveEdit = async (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!selectedProduct) return;
     if (!editName) {
@@ -208,6 +214,55 @@ export default function ProductsPage() {
       );
     } finally {
       setIsSavingEdit(false);
+    }
+  };
+
+  const handleImageFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedProduct) return;
+
+    setIsUploadingImage(true);
+    setImageUploadError("");
+    try {
+      const { imageUrl } = await uploadProductImage(file);
+      const updatedProduct = await updateProduct(selectedProduct.id, {
+        imageUrl,
+      });
+      setSelectedProduct(updatedProduct);
+      setProducts((prev) =>
+        prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)),
+      );
+    } catch (err) {
+      setImageUploadError(
+        err instanceof Error ? err.message : "Falha ao enviar imagem.",
+      );
+    } finally {
+      setIsUploadingImage(false);
+      // Limpa o input para permitir re-selecionar o mesmo arquivo
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    if (!selectedProduct) return;
+    setIsUploadingImage(true);
+    setImageUploadError("");
+    try {
+      const updatedProduct = await updateProduct(selectedProduct.id, {
+        imageUrl: null,
+      });
+      setSelectedProduct(updatedProduct);
+      setProducts((prev) =>
+        prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)),
+      );
+    } catch (err) {
+      setImageUploadError(
+        err instanceof Error ? err.message : "Falha ao remover imagem.",
+      );
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -512,23 +567,77 @@ export default function ProductsPage() {
                 <div className="flex justify-between items-start border-b border-outline-variant pb-4 mb-6">
                   {isEditMode ? (
                     <div className="flex-1 mr-4 flex flex-col gap-3">
-                      {/* Imagem com botão de editar */}
-                      <div className="relative w-fit">
-                        <ProductImage
-                          url={selectedProduct.imageUrl}
-                          name={selectedProduct.name}
-                          size="lg"
+                      {/* Imagem com controles de edição */}
+                      <div className="flex items-center gap-3">
+                        {/* Input de arquivo oculto */}
+                        <input
+                          ref={imageInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleImageFileChange}
                         />
-                        <button
-                          type="button"
-                          title="Editar imagem (em breve)"
-                          className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-md hover:opacity-90 transition-opacity cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[14px]">
-                            edit
-                          </span>
-                        </button>
+
+                        {/* Thumbnail com overlay de loading */}
+                        <div className="relative flex-shrink-0">
+                          {isUploadingImage ? (
+                            <div className="w-16 h-16 rounded-lg bg-surface-container border border-outline-variant flex items-center justify-center">
+                              <span className="material-symbols-outlined text-secondary text-[24px] animate-spin">
+                                progress_activity
+                              </span>
+                            </div>
+                          ) : (
+                            <ProductImage
+                              url={selectedProduct.imageUrl}
+                              name={selectedProduct.name}
+                              size="lg"
+                            />
+                          )}
+                        </div>
+
+                        {/* Botões de ação */}
+                        <div className="flex flex-col gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => imageInputRef.current?.click()}
+                            disabled={isUploadingImage}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-on-secondary text-xs font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">
+                              upload
+                            </span>
+                            {selectedProduct.imageUrl
+                              ? "Trocar imagem"
+                              : "Enviar imagem"}
+                          </button>
+
+                          {selectedProduct.imageUrl && (
+                            <button
+                              type="button"
+                              onClick={handleRemoveImage}
+                              disabled={isUploadingImage}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-error/40 text-error text-xs font-semibold hover:bg-error-container transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">
+                                delete
+                              </span>
+                              Remover imagem
+                            </button>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Erro de upload */}
+                      {imageUploadError && (
+                        <div className="p-2.5 rounded-lg bg-error-container text-on-error-container border border-error/20 flex items-center gap-2">
+                          <span className="material-symbols-outlined text-error text-[16px]">
+                            error
+                          </span>
+                          <p className="text-xs font-semibold">
+                            {imageUploadError}
+                          </p>
+                        </div>
+                      )}
 
                       <div className="flex items-center gap-2 text-on-surface-variant">
                         <span className="material-symbols-outlined text-secondary text-[20px]">

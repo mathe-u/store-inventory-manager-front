@@ -188,7 +188,7 @@ export interface UpdateProductBody {
   timeSpent?: number;
   lossIndex?: number;
   desiredMargin?: number; // decimal: 0.30 = 30%
-  imageUrl?: string;
+  imageUrl?: string | null;
   categoryId?: string | null;
 }
 
@@ -202,14 +202,39 @@ export async function updateProduct(
   });
 }
 
+// ─── Upload ─── //
+
+export async function uploadProductImage(
+  file: File,
+): Promise<{ imageUrl: string }> {
+  const token = getToken();
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${BASE_URL}/upload/products`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ message: "Falha no upload da imagem." }));
+    throw new Error(error?.message ?? "Falha no upload da imagem.");
+  }
+
+  return response.json();
+}
+
 // ─── Pricing ─── //
 
 export interface PricingInput {
   acquisitionCost: number;
   shippingCost?: number;
-  taxRate: number;         // decimal: 0.20 = 20%
-  desiredMargin: number;   // decimal: 0.30 = 30%
-  sellingPrice?: number;   // opcional — para calcular indicadores sobre o preço informado
+  taxRate: number; // decimal: 0.20 = 20%
+  desiredMargin: number; // decimal: 0.30 = 30%
+  sellingPrice?: number; // opcional — para calcular indicadores sobre o preço informado
   directCosts?: number;
   timeSpent?: number;
   lossIndex?: number;
