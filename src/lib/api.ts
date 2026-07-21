@@ -134,7 +134,7 @@ export interface ApiProduct {
   updatedAt: string;
 }
 
-export interface ApiProductDetail {}
+export type ApiProductDetail = object
 
 export interface CreateProductBody {
   name: string;

@@ -180,7 +180,7 @@ export default function DashboardLayout({
       </nav>
 
       {/* TopNavBar */}
-      <header className="fixed top-0 right-0 z-40 bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center px-8 py-3 w-[calc(100%-16rem)] h-16">
+      {/* <header className="fixed top-0 right-0 z-40 bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center px-8 py-3 w-[calc(100%-16rem)] h-16">
         <div className="flex items-center gap-4 flex-1">
           <div className="relative w-64 focus-within:ring-2 focus-within:ring-secondary rounded-DEFAULT">
             <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">
@@ -201,7 +201,7 @@ export default function DashboardLayout({
             <span className="material-symbols-outlined">settings</span>
           </button>
         </div>
-      </header>
+      </header> */}
 
       {/* Main Content Canvas */}
       <main className="ml-64 pt-20 p-margin-x pb-24">{children}</main>

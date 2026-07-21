@@ -321,17 +321,25 @@ export default function CategoriesPage() {
         ) : filtered.length === 0 ? (
           <EmptyState
             icon="category"
-            title="Nenhuma categoria encontrada"
+            title={
+              searchTerm
+                ? "Nenhuma categoria encontrada"
+                : "Nenhuma categoria cadastrada"
+            }
             description={
               searchTerm
-                ? "Nenhuma categoria com esse filtro."
+                ? `Nenhuma categoria corresponde ao filtro "${searchTerm}".`
                 : "Comece criando a primeira categoria."
             }
-            actionButton={{
-              label: "Nova categoria",
-              icon: "add",
-              onClick: openCreate,
-            }}
+            actionButton={
+              searchTerm
+                ? undefined
+                : {
+                    label: "Nova categoria",
+                    icon: "add",
+                    onClick: openCreate,
+                  }
+            }
           />
         ) : (
           <div className="overflow-x-auto">
