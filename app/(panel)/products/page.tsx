@@ -368,17 +368,25 @@ export default function ProductsPage() {
         ) : filteredProducts.length === 0 ? (
           <EmptyState
             icon="inventory_2"
-            title="Nenhum produto encontrado"
+            title={
+              searchTerm
+                ? "Nenhum produto encontrado"
+                : "Nenhum produto cadastrado"
+            }
             description={
               searchTerm
-                ? "Nenhum produto com esse filtro."
+                ? `Nenhum produto corresponde ao filtro "${searchTerm}".`
                 : "Nenhum produto cadastrado ainda. Comece cadastrando seu primeiro produto."
             }
-            actionButton={{
-              label: "Cadastrar Produto",
-              icon: "add",
-              href: "/products/register",
-            }}
+            actionButton={
+              searchTerm
+                ? undefined
+                : {
+                    label: "Cadastrar Produto",
+                    icon: "add",
+                    href: "/products/register",
+                  }
+            }
           />
         ) : (
           <div className="overflow-x-auto">
