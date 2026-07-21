@@ -14,6 +14,7 @@ import {
 import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
+import ErrorAlert from "@/src/components/ErrorAlert";
 import Badge, { BadgeVariant } from "@/src/components/Badge";
 import Modal from "@/src/components/Modal";
 import ProductImage from "@/src/components/ProductImage";
@@ -21,6 +22,7 @@ import ProductImage from "@/src/components/ProductImage";
 export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [paymentMethods, setPaymentMethods] = useState<ApiPaymentMethod[]>([]);
 
   // search state
@@ -53,6 +55,7 @@ export default function SalesPage() {
 
   const loadSales = async (productName?: string) => {
     setIsLoading(true);
+    setLoadError("");
     try {
       const searchVal =
         typeof productName === "string" ? productName : debouncedSearchTerm;
@@ -63,6 +66,9 @@ export default function SalesPage() {
       setSales(data);
     } catch (error) {
       console.error("Failed to fetch sales", error);
+      setLoadError(
+        error instanceof Error ? error.message : "Falha ao carregar vendas.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -334,6 +340,15 @@ export default function SalesPage() {
         </button> */}
       </SearchFilterBar>
 
+      {/* Error state */}
+      {loadError && (
+        <ErrorAlert
+          title="Falha ao carregar vendas"
+          message={loadError}
+          onRetry={loadSales}
+        />
+      )}
+
       {/* Sales Table */}
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
         {isLoading ? (
@@ -341,15 +356,25 @@ export default function SalesPage() {
         ) : filteredSales.length === 0 ? (
           <EmptyState
             icon="payments"
-            title="Nenhuma venda encontrada"
-            description={
-              "Nenhuma venda cadastrada ainda. Comece registrando sua primeira venda."
+            title={
+              searchTerm || statusFilter
+                ? "Nenhuma venda encontrada"
+                : "Nenhuma venda registrada"
             }
-            actionButton={{
-              label: "Registrar Venda",
-              icon: "add",
-              href: "/sales/register",
-            }}
+            description={
+              searchTerm || statusFilter
+                ? "Nenhuma venda corresponde aos filtros aplicados."
+                : "Nenhuma venda cadastrada ainda. Comece registrando sua primeira venda."
+            }
+            actionButton={
+              searchTerm || statusFilter
+                ? undefined
+                : {
+                    label: "Registrar Venda",
+                    icon: "add",
+                    href: "/sales/register",
+                  }
+            }
           />
         ) : (
           <div className="overflow-x-auto">
