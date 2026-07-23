@@ -204,7 +204,7 @@ export default function DashboardLayout({
       </header> */}
 
       {/* Main Content Canvas */}
-      <main className="ml-64 pt-20 p-margin-x pb-24">{children}</main>
+      <main className="ml-64 pt-8 p-margin-x pb-24">{children}</main>
     </div>
   );
 }
