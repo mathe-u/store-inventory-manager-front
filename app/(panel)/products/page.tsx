@@ -18,6 +18,7 @@ import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
 import Badge from "@/src/components/Badge";
 import ErrorAlert from "@/src/components/ErrorAlert";
+import ErrorState from "@/src/components/ErrorState";
 import ProductImage from "@/src/components/ProductImage";
 
 // Helper: parse the raw metadata JSON string from the API
@@ -332,34 +333,37 @@ export default function ProductsPage() {
           { label: "Catálogo de Produtos" },
         ]}
         onRefresh={loadProducts}
-        actionButton={{
-          label: "Cadastrar Produto",
-          icon: "add",
-          href: "/products/register",
-        }}
+        actionButton={
+          loadError
+            ? undefined
+            : {
+                label: "Cadastrar Produto",
+                icon: "add",
+                href: "/products/register",
+              }
+        }
       ></PageHeader>
 
-      {/* Search and Filters */}
-      <SearchFilterBar
-        placeholder="Filtrar por nome, Id ou categoria..."
-        value={searchTerm}
-        onChange={setSearchTerm}
-        totalCountText={
-          searchTerm
-            ? `Mostrando ${products.length} resultado(s)`
-            : `Total: ${products.length} produtos`
-        }
-        isLoading={isLoading}
-      />
-
-      {/* Error state */}
-      {loadError && (
-        <ErrorAlert
+      {loadError ? (
+        <ErrorState
           title="Falha ao carregar produtos"
           message={loadError}
           onRetry={loadProducts}
         />
-      )}
+      ) : (
+        <>
+          {/* Search and Filters */}
+          <SearchFilterBar
+            placeholder="Filtrar por nome, Id ou categoria..."
+            value={searchTerm}
+            onChange={setSearchTerm}
+            totalCountText={
+              searchTerm
+                ? `Mostrando ${products.length} resultado(s)`
+                : `Total: ${products.length} produtos`
+            }
+            isLoading={isLoading}
+          />
 
       {/* Products Table */}
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
@@ -486,6 +490,8 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+        </>
+      )}
 
       {isDetailsOpen &&
         selectedProduct &&

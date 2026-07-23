@@ -11,6 +11,7 @@ import Chart from "chart.js/auto";
 import Link from "next/link";
 import PageHeader from "@/src/components/PageHeader";
 import KpiCard from "@/src/components/KpiCard";
+import ErrorState from "@/src/components/ErrorState";
 
 Chart.defaults.font.family = "JetBrains Mono, monospace";
 Chart.defaults.color = "#76777d";
@@ -388,97 +389,77 @@ export default function DashboardPage() {
     );
   }
 
-    if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
-        <div className="bg-error-container/60 p-5 rounded-full mb-4 flex items-center justify-center">
-          <span className="material-symbols-outlined text-error text-4xl">
-            warning
-          </span>
-        </div>
-        <h2 className="font-headline-md text-headline-md text-on-surface mb-2 font-semibold">
-          Erro ao carregar os dados
-        </h2>
-        <p className="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md">
-          {error}
-        </p>
-        <button
-          onClick={() => loadDashboardStats(period)}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-on-primary font-semibold text-sm hover:bg-inverse-surface transition-all active:scale-95 shadow-sm"
-        >
-          <span className="material-symbols-outlined text-[18px]">
-            refresh
-          </span>
-          Tentar Novamente
-        </button>
-      </div>
-    );
-  }
 
-
-  if (!dashboardStats) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <span className="text-body-md text-on-surface-variant">
-          Sem as estatísticas do dashboard disponiveis.
-        </span>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-container-max mx-auto flex flex-col gap-section-gap">
-      {/* Page Header */}
       <PageHeader
         title="Business Intelligence"
         description="Visão em tempo real do desempenho do seu negócio e lucros."
         breadcrumbs={[{ label: "Dashboard", icon: "dashboard" }]}
         rightContent={
-          <div className="flex items-center gap-3">
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-1 flex text-[12px] font-semibold">
-              <button
-                onClick={() => setPeriod(30)}
-                className={`px-4 py-1.5 rounded transition-colors ${
-                  period === 30
-                    ? "bg-surface-container-low text-on-surface shadow-sm"
-                    : "text-on-surface-variant hover:text-on-surface"
-                }`}
-              >
-                30 Dias
-              </button>
+          error ? undefined : (
+            <div className="flex items-center gap-3">
+              <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-1 flex text-[12px] font-semibold">
+                <button
+                  onClick={() => setPeriod(30)}
+                  className={`px-4 py-1.5 rounded transition-colors ${
+                    period === 30
+                      ? "bg-surface-container-low text-on-surface shadow-sm"
+                      : "text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  30 Dias
+                </button>
 
-              <button
-                onClick={() => setPeriod(90)}
-                className={`px-4 py-1.5 rounded transition-colors ${
-                  period === 90
-                    ? "bg-surface-container-low text-on-surface shadow-sm"
-                    : "text-on-surface-variant hover:text-on-surface"
-                }`}
-              >
-                90 Dias
-              </button>
+                <button
+                  onClick={() => setPeriod(90)}
+                  className={`px-4 py-1.5 rounded transition-colors ${
+                    period === 90
+                      ? "bg-surface-container-low text-on-surface shadow-sm"
+                      : "text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  90 Dias
+                </button>
 
-              <button
-                onClick={() => setPeriod(365)}
-                className={`px-4 py-1.5 rounded transition-colors ${
-                  period === 365
-                    ? "bg-surface-container-low text-on-surface shadow-sm"
-                    : "text-on-surface-variant hover:text-on-surface"
-                }`}
-              >
-                12 Meses
+                <button
+                  onClick={() => setPeriod(365)}
+                  className={`px-4 py-1.5 rounded transition-colors ${
+                    period === 365
+                      ? "bg-surface-container-low text-on-surface shadow-sm"
+                      : "text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  12 Meses
+                </button>
+              </div>
+
+              <button className="bg-primary text-on-primary px-4 py-2 rounded-lg text-[12px] font-semibold flex items-center gap-2 hover:bg-inverse-surface transition-colors">
+                <span className="material-symbols-outlined text-[18px]">
+                  download
+                </span>
+                Exportar Relatório
               </button>
             </div>
-
-            <button className="bg-primary text-on-primary px-4 py-2 rounded-lg text-[12px] font-semibold flex items-center gap-2 hover:bg-inverse-surface transition-colors">
-              <span className="material-symbols-outlined text-[18px]">
-                download
-              </span>
-              Exportar Relatório
-            </button>
-          </div>
+          )
         }
       ></PageHeader>
+
+      {error ? (
+        <ErrorState
+          title="Erro ao carregar os dados"
+          message={error}
+          onRetry={() => loadDashboardStats(period)}
+        />
+      ) : !dashboardStats ? (
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <span className="text-body-md text-on-surface-variant">
+            Sem as estatísticas do dashboard disponíveis.
+          </span>
+        </div>
+      ) : (
+        <>
 
       {/* Top KPIs Bento */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
@@ -750,6 +731,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

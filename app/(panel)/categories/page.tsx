@@ -16,6 +16,7 @@ import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
 import Badge from "@/src/components/Badge";
 import ErrorAlert from "@/src/components/ErrorAlert";
+import ErrorState from "@/src/components/ErrorState";
 
 const PRESET_COLORS = [
   "#0051d5",
@@ -285,34 +286,37 @@ export default function CategoriesPage() {
           { label: "Lista de Categorias" },
         ]}
         onRefresh={loadCategories}
-        actionButton={{
-          label: "Nova categoria",
-          icon: "add",
-          onClick: openCreate,
-        }}
-      />
-
-      {/* Search bar */}
-      <SearchFilterBar
-        placeholder="Filtrar por nome ou descrição..."
-        value={searchTerm}
-        onChange={setSearchTerm}
-        totalCountText={
-          searchTerm
-            ? `Mostrando ${categories.length} resultado(s)`
-            : `Total: ${categories.length} categorias`
+        actionButton={
+          loadError
+            ? undefined
+            : {
+                label: "Nova categoria",
+                icon: "add",
+                onClick: openCreate,
+              }
         }
-        isLoading={isLoading}
       />
 
-      {/* Error */}
-      {loadError && (
-        <ErrorAlert
+      {loadError ? (
+        <ErrorState
           title="Falha ao carregar categorias"
           message={loadError}
           onRetry={loadCategories}
         />
-      )}
+      ) : (
+        <>
+          {/* Search bar */}
+          <SearchFilterBar
+            placeholder="Filtrar por nome ou descrição..."
+            value={searchTerm}
+            onChange={setSearchTerm}
+            totalCountText={
+              searchTerm
+                ? `Mostrando ${categories.length} resultado(s)`
+                : `Total: ${categories.length} categorias`
+            }
+            isLoading={isLoading}
+          />
 
       {/* Table */}
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
@@ -413,6 +417,8 @@ export default function CategoriesPage() {
           </div>
         )}
       </div>
+        </>
+      )}
 
       {/* Create Modal */}
       {isCreateOpen && (

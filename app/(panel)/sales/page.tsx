@@ -15,6 +15,7 @@ import SearchFilterBar from "@/src/components/SearchFilterBar";
 import LoadingState from "@/src/components/LoadingState";
 import EmptyState from "@/src/components/EmptyState";
 import ErrorAlert from "@/src/components/ErrorAlert";
+import ErrorState from "@/src/components/ErrorState";
 import Badge, { BadgeVariant } from "@/src/components/Badge";
 import Modal from "@/src/components/Modal";
 import ProductImage from "@/src/components/ProductImage";
@@ -196,113 +197,37 @@ export default function SalesPage() {
           { label: "histórico de transações" },
         ]}
         onRefresh={loadSales}
-        actionButton={{
-          label: "Registrar Venda",
-          icon: "add",
-          href: "/sales/register",
-        }}
+        actionButton={
+          loadError
+            ? undefined
+            : {
+                label: "Registrar Venda",
+                icon: "add",
+                href: "/sales/register",
+              }
+        }
       ></PageHeader>
 
-      {/* Metrics Summary */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
-              Total de Vendas
-            </span>
-            <div className="p-2 bg-secondary/10 rounded-lg text-secondary">
-              <span className="material-symbols-outlined">payments</span>
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-display-lg text-display-lg font-bold">
-              R$ 14,290.50
-            </span>
-            <span className="text-on-tertiary-container text-xs flex items-center gap-1 mt-1 font-medium">
-              <span className="material-symbols-outlined text-sm">
-                trending_up
-              </span>{" "}
-              +12.5% from last month
-            </span>
-          </div>
-        </div>
-        Units Sold
-        <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
-              Total de Produtos Vendidos
-            </span>
-            <div className="p-2 bg-secondary-container/10 rounded-lg text-secondary-container">
-              <span className="material-symbols-outlined">shopping_cart</span>
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-display-lg text-display-lg font-bold">
-              342
-            </span>
-            <span className="text-on-tertiary-container text-xs flex items-center gap-1 mt-1 font-medium">
-              <span className="material-symbols-outlined text-sm">
-                trending_up
-              </span>{" "}
-              +8% mais vendas
-            </span>
-          </div>
-        </div>
-        Avg Order Value
-        <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
-              Preço médio por venda
-            </span>
-            <div className="p-2 bg-tertiary-container/10 rounded-lg text-on-tertiary-container">
-              <span className="material-symbols-outlined">calculate</span>
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-display-lg text-display-lg font-bold">
-              R$ 41.78
-            </span>
-            <span className="text-on-error-container text-xs flex items-center gap-1 mt-1 font-medium">
-              <span className="material-symbols-outlined text-sm">
-                trending_down
-              </span>{" "}
-              -2.1% de queda
-            </span>
-          </div>
-        </div>
-        Pending Payouts
-        <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
-              Saldo Pendente
-            </span>
-            <div className="p-2 bg-surface-container-high rounded-lg text-on-surface">
-              <span className="material-symbols-outlined">hourglass_empty</span>
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-display-lg text-display-lg font-bold">
-              R$ 1,840.00
-            </span>
-            <span className="text-on-surface-variant text-xs mt-1">
-              Disponível em até 48 horas
-            </span>
-          </div>
-        </div>
-      </div> */}
-
-      {/* Filters */}
-      <SearchFilterBar
-        placeholder="Buscar por nome do produto..."
-        value={searchTerm}
-        onChange={setSearchTerm}
-        totalCountText={
-          searchTerm || statusFilter
-            ? `Mostrando ${sales.length} resultado(s)`
-            : `Total: ${sales.length} transações`
-        }
-        isLoading={isLoading}
-      >
+      {loadError ? (
+        <ErrorState
+          title="Falha ao carregar vendas"
+          message={loadError}
+          onRetry={loadSales}
+        />
+      ) : (
+        <>
+          {/* Filters */}
+          <SearchFilterBar
+            placeholder="Buscar por nome do produto..."
+            value={searchTerm}
+            onChange={setSearchTerm}
+            totalCountText={
+              searchTerm || statusFilter
+                ? `Mostrando ${sales.length} resultado(s)`
+                : `Total: ${sales.length} transações`
+            }
+            isLoading={isLoading}
+          >
         {/* <div className="flex items-center gap-2">
           <span className="text-label-sm font-label-sm text-on-surface-variant">
             Data:
@@ -338,16 +263,7 @@ export default function SalesPage() {
         <button className="text-secondary font-semibold px-4 py-2 hover:bg-surface-container-low rounded-lg transition-all">
           Limpar
         </button> */}
-      </SearchFilterBar>
-
-      {/* Error state */}
-      {loadError && (
-        <ErrorAlert
-          title="Falha ao carregar vendas"
-          message={loadError}
-          onRetry={loadSales}
-        />
-      )}
+          </SearchFilterBar>
 
       {/* Sales Table */}
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
@@ -492,6 +408,8 @@ export default function SalesPage() {
           </div>
         )}
       </div>
+        </>
+      )}
 
       {/* Edit Modal */}
       <Modal
