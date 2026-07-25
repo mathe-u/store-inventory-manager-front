@@ -46,6 +46,9 @@ export default function SalesPage() {
   const [deleteTarget, setDeleteTarget] = useState<ApiSale | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Detail Modal State
+  const [detailTarget, setDetailTarget] = useState<ApiSale | null>(null);
+
   // Debounce the search term to avoid hitting the API on every keystroke
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -313,7 +316,8 @@ export default function SalesPage() {
                 {filteredSales.map((sale) => (
                   <tr
                     key={sale.id}
-                    className="border-b border-outline-variant/60 hover:bg-surface-container-low transition-colors"
+                    onClick={() => setDetailTarget(sale)}
+                    className="border-b border-outline-variant/60 hover:bg-surface-container-low transition-colors cursor-pointer"
                   >
                     <td className="p-4 font-data-tabular text-on-surface-variant text-sm whitespace-nowrap">
                       {formatDate(sale.createdAt)}
@@ -575,6 +579,112 @@ export default function SalesPage() {
               </button>
             </div>
           </form>
+        )}
+      </Modal>
+
+      {/* Detail Modal */}
+      <Modal
+      isOpen={detailTarget !== null}
+      onClose={() => setDetailTarget(null)}
+      title="Detalhes da Venda"
+      titleIcon="receipt_long"
+      titleIconColor="text-secondary"
+      size="md"
+      >
+        {detailTarget && (
+          <div className="flex flex-col gap-4">
+            {/* Produto */}
+            <div className="flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant">
+        <ProductImage
+          url={detailTarget.product?.imageUrl}
+          name={detailTarget.product?.name || "Produto"}
+        />
+        <div>
+          <p className="font-semibold text-on-surface text-sm">
+            {detailTarget.product?.name}
+          </p>
+          {detailTarget.product?.category && (
+            <div className="mt-0.5">
+              <Badge
+                label={detailTarget.product.category.name}
+                color={detailTarget.product.category.color ?? undefined}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Informações */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-on-surface-variant">Data</span>
+          <span className="text-sm text-on-surface">{formatDate(detailTarget.createdAt)}</span>
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-on-surface-variant">Cliente</span>
+          <span className="text-sm text-on-surface">
+            {detailTarget.customerName || <span className="italic opacity-50">Cliente Balcão</span>}
+          </span>
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-on-surface-variant">Quantidade</span>
+          <span className="text-sm text-on-surface font-data-tabular">{detailTarget.quantity}</span>
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-on-surface-variant">Status</span>
+          <Badge
+            label={getStatusLabel(detailTarget.status)}
+            variant={getStatusVariant(detailTarget.status)}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-on-surface-variant">Método de Pagamento</span>
+          <div className="flex items-center gap-1.5 text-sm text-on-surface">
+            <span className="material-symbols-outlined text-[16px]">
+              {detailTarget.paymentMethod?.icon || "payments"}
+            </span>
+            <span>{detailTarget.paymentMethod?.name || "Dinheiro"}</span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-on-surface-variant">Receita</span>
+          <span className="text-sm font-semibold text-on-surface font-data-tabular">
+            R$ {detailTarget.finalPrice.toFixed(2)}
+          </span>
+        </div>
+      </div>
+      {/* Lucro */}
+      <div className={`rounded-xl p-4 border flex flex-col items-center text-center ${detailTarget.calculatedProfit >= 0 ? "bg-tertiary-container border-tertiary/30" : "bg-error-container border-error/30"}`}>
+        <span className="text-xs font-semibold text-on-surface-variant mb-1">Lucro Líquido</span>
+        <span className={`text-2xl font-bold font-data-tabular ${detailTarget.calculatedProfit >= 0 ? "text-on-tertiary-container" : "text-on-error-container"}`}>
+          {detailTarget.calculatedProfit >= 0 ? "+" : "-"} R$ {Math.abs(detailTarget.calculatedProfit).toFixed(2)}
+        </span>
+      </div>
+      {/* Ações */}
+      <div className="flex justify-end gap-3 pt-3 border-t border-outline-variant">
+        <button
+          type="button"
+          onClick={() => {
+            setDetailTarget(null);
+            openEditModal(detailTarget);
+          }}
+          className="px-4 py-2 rounded-lg bg-secondary text-on-secondary font-label-sm font-semibold hover:opacity-90 transition-colors cursor-pointer flex items-center gap-2"
+        >
+          <span className="material-symbols-outlined text-[16px]">edit</span>
+          Editar
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setDetailTarget(null);
+            setDeleteTarget(detailTarget);
+          }}
+          className="px-4 py-2 rounded-lg border border-error/50 text-error font-label-sm font-semibold hover:bg-error-container transition-colors cursor-pointer flex items-center gap-2"
+        >
+          <span className="material-symbols-outlined text-[16px]">delete</span>
+          Excluir
+        </button>
+            </div>
+          </div>
         )}
       </Modal>
 
