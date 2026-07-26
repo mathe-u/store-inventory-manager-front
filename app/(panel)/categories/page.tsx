@@ -220,8 +220,8 @@ export default function CategoriesPage() {
     }
   };
 
-  const openEdit = (cat: ApiCategory, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const openEdit = (cat: ApiCategory, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setEditTarget(cat);
     setEditForm({
       name: cat.name,
@@ -361,7 +361,8 @@ export default function CategoriesPage() {
                 {filtered.map((cat) => (
                   <tr
                     key={cat.id}
-                    className="border-b border-outline-variant/60 hover:bg-surface-container-low transition-colors"
+                    onClick={() => openEdit(cat)}
+                    className="border-b border-outline-variant/60 hover:bg-surface-container-low transition-colors cursor-pointer"
                   >
                     <td className="p-4">
                       <div className="flex items-center gap-2.5">
