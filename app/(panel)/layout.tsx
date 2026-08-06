@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
+import { logout } from "@/src/lib/api";
 
 export default function DashboardLayout({
   children,
@@ -10,6 +12,30 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("API_TOKEN");
+    if (!token) {
+      router.push("/");
+    }
+  }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      // Chama o endpoint para salvar o token atual na blacklist do backend
+      await logout();
+    } catch (err) {
+      console.error("Erro ao invalidar o token no backend:", err);
+    } finally {
+      // Remove o token do armazenamento local
+      localStorage.removeItem("API_TOKEN");
+      localStorage.removeItem("REMEMBER_ME");
+      
+      // Redireciona o usuário de volta para a página de login
+      router.push("/");
+    }
+  };
 
   // Verificadores de rota ativa (ajustados para cada página)
   const isDashboardActive = pathname === "/dashboard";
@@ -155,7 +181,7 @@ export default function DashboardLayout({
           </li>
         </ul>
 
-        {/* Área do Perfil (Mantida igual) */}
+        {/* Área do Perfil */}
         <div className="px-6 mt-auto">
           <div className="flex items-center gap-3 pt-4 border-t border-outline-variant">
             <div className="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden relative">
@@ -167,7 +193,7 @@ export default function DashboardLayout({
                 sizes="40px"
               />
             </div>
-            <div>
+            <div className="flex-grow">
               <p className="font-body-md text-body-md font-semibold text-on-surface">
                 Matheus Silva
               </p>
@@ -175,6 +201,15 @@ export default function DashboardLayout({
                 Admin
               </p>
             </div>
+            <button
+              onClick={handleLogout}
+              className="p-1.5 rounded-lg text-error hover:bg-error-container/20 transition-colors flex items-center justify-center cursor-pointer active:scale-95 duration-100"
+              title="Sair"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                logout
+              </span>
+            </button>
           </div>
         </div>
       </nav>

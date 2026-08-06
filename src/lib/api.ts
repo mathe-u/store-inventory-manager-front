@@ -54,6 +54,12 @@ export async function login(email: string, password: string) {
   });
 }
 
+export async function logout(): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>("auth/logout", {
+    method: "POST",
+  });
+}
+
 // ─── Categories ─── //
 
 export interface ApiCategory {
