@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { logout } from "@/src/lib/api";
+import { logout, getUserById, parseJwt, ApiUser } from "@/src/lib/api";
 
 export default function DashboardLayout({
   children,
@@ -13,13 +13,33 @@ export default function DashboardLayout({
 }>) {
   const pathname = usePathname();
   const router = useRouter();
+  const [user, setUser] = useState<ApiUser | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("API_TOKEN");
     if (!token) {
       router.push("/");
+      return;
+    }
+
+    const decoded = parseJwt(token);
+    if (decoded && decoded.sub) {
+      getUserById(decoded.sub).then((user) => {
+        setUser(user);
+      })
+      .catch((err) => {
+        console.error("Erro ao buscar usuário:", err);
+        localStorage.removeItem("API_TOKEN");
+        localStorage.removeItem("REMEMBER_ME");
+        router.push("/");
+      })
+    } else {
+      router.push("/");
     }
   }, [router]);
+
+  
+
 
   const handleLogout = async () => {
     try {
@@ -195,10 +215,10 @@ export default function DashboardLayout({
             </div>
             <div className="flex-grow">
               <p className="font-body-md text-body-md font-semibold text-on-surface">
-                Matheus Silva
+                {user ? user.name : "Carregando..."}
               </p>
               <p className="font-label-sm text-label-sm text-on-surface-variant">
-                Admin
+                {user ? user.role.toLowerCase() : ""}
               </p>
             </div>
             <button
