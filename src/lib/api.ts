@@ -416,3 +416,41 @@ export async function getProductPriceEvolution(
     `dashboard/price-evolution/${productId}?days=${days}`,
   );
 }
+
+// ─── Users ─── //
+
+export interface ApiUser {
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "SELLER";
+  isActive: boolean;
+}
+
+export interface JwtPayload {
+  sub: string;
+  name: string;
+  role: "ADMIN" | "SELLER";
+  exp: number;
+}
+
+// Decodifica a parte do payload do JWT de forma segura no navegador sem bibliotecas externas
+export function parseJwt(token: string): JwtPayload | null {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      window.atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function getUserById(id: string): Promise<ApiUser> {
+  return apiFetch<ApiUser>(`users/${id}`);
+}
