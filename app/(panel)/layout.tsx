@@ -16,6 +16,12 @@ export default function DashboardLayout({
   const [user, setUser] = useState<ApiUser | null>(null);
 
   useEffect(() => {
+    if (user && user.role === "SELLER" && pathname.startsWith("/categories")) {
+      router.push("/dashboard");
+    }
+  }, [user, pathname, router]);
+
+  useEffect(() => {
     const token = localStorage.getItem("API_TOKEN");
     if (!token) {
       router.push("/");
@@ -252,9 +258,12 @@ export default function DashboardLayout({
           <button className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-all focus-within:ring-2 focus-within:ring-secondary cursor-pointer">
             <span className="material-symbols-outlined">notifications</span>
           </button>
-          <button className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-all focus-within:ring-2 focus-within:ring-secondary cursor-pointer">
-            <span className="material-symbols-outlined">settings</span>
-          </button>
+          {user?.role === "ADMIN" && (
+            <button className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-all focus-within:ring-2 focus-within:ring-secondary cursor-pointer">
+              <span className="material-symbols-outlined">settings</span>
+            </button>
+          )}
+
         </div>
       </header> */}
 
