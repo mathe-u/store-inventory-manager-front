@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { logout, getUserById, parseJwt, ApiUser } from "@/src/lib/api";
+import { UserContext } from "@/src/contexts/UserContext";
 
 export default function DashboardLayout({
   children,
@@ -14,12 +15,6 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<ApiUser | null>(null);
-
-  useEffect(() => {
-    if (user && user.role === "SELLER" && pathname.startsWith("/categories")) {
-      router.push("/dashboard");
-    }
-  }, [user, pathname, router]);
 
   useEffect(() => {
     const token = localStorage.getItem("API_TOKEN");
@@ -70,7 +65,10 @@ export default function DashboardLayout({
   const isCategoriesActive = pathname.startsWith("/categories");
   const isReportsActive = pathname.startsWith("/reports");
 
+  const isAdmin = user?.role === "ADMIN";
+
   return (
+    <UserContext.Provider value={{ user }}>
     <div className="min-h-screen bg-background font-body-md text-body-md text-on-background">
       {/* SideNavBar */}
       <nav className="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface flex flex-col py-spacing-stack-default z-50">
@@ -182,29 +180,31 @@ export default function DashboardLayout({
             </Link>
           </li>
 
-          {/* Item: Reports */}
-          <li>
-            <Link
-              href="/reports"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${
-                isReportsActive
-                  ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
-                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
-              }`}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{
-                  fontVariationSettings: isReportsActive
-                    ? "'FILL' 1"
-                    : "'FILL' 0",
-                }}
+          {/* Item: Reports — somente ADMIN */}
+          {isAdmin && (
+            <li>
+              <Link
+                href="/reports"
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${
+                  isReportsActive
+                    ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
+                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+                }`}
               >
-                analytics
-              </span>
-              <span className="font-body-md text-body-md">Relatórios</span>
-            </Link>
-          </li>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontVariationSettings: isReportsActive
+                      ? "'FILL' 1"
+                      : "'FILL' 0",
+                  }}
+                >
+                  analytics
+                </span>
+                <span className="font-body-md text-body-md">Relatórios</span>
+              </Link>
+            </li>
+          )}
         </ul>
 
         {/* Área do Perfil */}
@@ -270,5 +270,6 @@ export default function DashboardLayout({
       {/* Main Content Canvas */}
       <main className="ml-64 pt-8 p-margin-x pb-24">{children}</main>
     </div>
+    </UserContext.Provider>
   );
 }

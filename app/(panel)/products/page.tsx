@@ -20,6 +20,7 @@ import Badge from "@/src/components/Badge";
 import ErrorAlert from "@/src/components/ErrorAlert";
 import ErrorState from "@/src/components/ErrorState";
 import ProductImage from "@/src/components/ProductImage";
+import { useUser } from "@/src/contexts/UserContext";
 
 // Helper: parse the raw metadata JSON string from the API
 function parseMetadata(raw: string): Record<string, unknown> {
@@ -53,6 +54,8 @@ function deriveNetProfit(product: ApiProduct, sellingPrice: number): number {
 }
 
 export default function ProductsPage() {
+  const { user } = useUser();
+  const isAdmin = user?.role === "ADMIN";
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -334,7 +337,7 @@ export default function ProductsPage() {
         ]}
         onRefresh={loadProducts}
         actionButton={
-          loadError
+          loadError || !isAdmin
             ? undefined
             : {
                 label: "Cadastrar Produto",
@@ -471,15 +474,17 @@ export default function ProductsPage() {
                               visibility
                             </span>
                           </button>
-                          <button
-                            onClick={(e) => handleDeleteClick(p, e)}
-                            className="p-1.5 rounded hover:bg-error-container text-outline hover:text-error transition-colors cursor-pointer"
-                            title="Deletar Produto"
-                          >
-                            <span className="material-symbols-outlined text-[20px]">
-                              delete
-                            </span>
-                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={(e) => handleDeleteClick(p, e)}
+                              className="p-1.5 rounded hover:bg-error-container text-outline hover:text-error transition-colors cursor-pointer"
+                              title="Deletar Produto"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">
+                                delete
+                              </span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
