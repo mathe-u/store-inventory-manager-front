@@ -19,7 +19,9 @@ async function apiFetch<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BASE_URL}/${path}`, {
+  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+
+  const response = await fetch(`${BASE_URL}/${cleanPath}`, {
     ...options,
     headers,
   });
@@ -158,11 +160,38 @@ export interface CreateProductBody {
   categoryId?: string;
 }
 
-export async function getProducts(search?: string): Promise<ApiProduct[]> {
-  const path = search
-    ? `products/?search=${encodeURIComponent(search)}`
-    : "products/";
-  return apiFetch<ApiProduct[]>(path);
+export interface ApiPaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ApiProductsResponse {
+  products: ApiProduct[];
+  meta: ApiPaginationMeta;
+}
+
+export async function getProducts(
+  search?: string,
+  page?: number,
+  limit?: number,
+): Promise<ApiProductsResponse> {
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (page) params.set("page", page.toString());
+  if (limit) params.set("limit", limit.toString());
+  const query = params.toString();
+  const data = await apiFetch<ApiProductsResponse | ApiProduct[]>(
+    query ? `products/?${query}` : "products/",
+  );
+  if (Array.isArray(data)) {
+    return {
+      products: data,
+      meta: { page: 1, limit: data.length, total: data.length, totalPages: 1 },
+    };
+  }
+  return data;
 }
 
 export async function getProductById(id: string): Promise<ApiProductDetail> {
@@ -179,7 +208,7 @@ export async function createProduct(
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  return apiFetch<void>(`/products/${id}`, { method: "DELETE" });
+  return apiFetch<void>(`products/${id}`, { method: "DELETE" });
 }
 
 export interface UpdateProductBody {
@@ -323,15 +352,40 @@ export interface SaleMutationResponse {
  * @param productName - Filtro opcional pelo nome do produto (server-side).
  * @param status - Filtro opcional pelo status da venda (server-side).
  */
+export interface ApiSalesResponse {
+  sales: ApiSale[];
+  meta: ApiPaginationMeta;
+}
+
+/**
+ * Retorna o histórico completo de vendas, incluindo os dados dos produtos atrelados.
+ * @param productName - Filtro opcional pelo nome do produto (server-side).
+ * @param status - Filtro opcional pelo status da venda (server-side).
+ * @param page - Número da página.
+ * @param limit - Quantidade de itens por página.
+ */
 export async function getSales(
   productName?: string,
   status?: SaleStatus,
-): Promise<ApiSale[]> {
+  page?: number,
+  limit?: number,
+): Promise<ApiSalesResponse> {
   const params = new URLSearchParams();
   if (productName) params.set("productName", productName);
   if (status) params.set("status", status);
+  if (page) params.set("page", page.toString());
+  if (limit) params.set("limit", limit.toString());
   const query = params.toString();
-  return apiFetch<ApiSale[]>(query ? `sales/?${query}` : "sales/");
+  const data = await apiFetch<ApiSalesResponse | ApiSale[]>(
+    query ? `sales/?${query}` : "sales/",
+  );
+  if (Array.isArray(data)) {
+    return {
+      sales: data,
+      meta: { page: 1, limit: data.length, total: data.length, totalPages: 1 },
+    };
+  }
+  return data;
 }
 
 /**

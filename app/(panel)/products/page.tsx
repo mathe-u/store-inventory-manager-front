@@ -278,7 +278,8 @@ export default function ProductsPage() {
         const searchVal =
           typeof search === "string" ? search : debouncedSearchTerm;
         const data = await getProducts(searchVal);
-        setProducts(data);
+        const productList = Array.isArray(data) ? data : (data?.products ?? []);
+        setProducts(productList);
       } catch (err) {
         setLoadError(
           err instanceof Error ? err.message : "Failed to load products.",
