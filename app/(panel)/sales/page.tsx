@@ -67,7 +67,8 @@ export default function SalesPage() {
         searchVal || undefined,
         statusFilter || undefined,
       );
-      setSales(data);
+      const salesList = Array.isArray(data) ? data : (data?.sales ?? []);
+      setSales(salesList);
     } catch (error) {
       console.error("Failed to fetch sales", error);
       setLoadError(

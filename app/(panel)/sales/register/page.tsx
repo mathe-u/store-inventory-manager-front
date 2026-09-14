@@ -69,7 +69,8 @@ export default function LogNewSale() {
   useEffect(() => {
     getProducts()
       .then((data) => {
-        setProducts(data);
+        const productList = Array.isArray(data) ? data : (data?.products ?? []);
+        setProducts(productList);
         setProductsLoading(false);
       })
       .catch((err) => {
