@@ -249,7 +249,7 @@ export default function DashboardPage() {
               ],
               backgroundColor: [
                 "#0051d5", // secondary
-                "#ba1a1a", // error
+                "#316bf3", // secondary-container (intermediate blue)
                 "#e5eeff", // surface-container
               ],
               borderWidth: 2,
@@ -499,15 +499,12 @@ export default function DashboardPage() {
           iconColorClass="text-primary"
         />
 
-        {/* KPI 4: Gross Profit */}
+        {/* KPI 4: Total Products */}
         <KpiCard
-          title="Lucro Bruto"
-          value={new Intl.NumberFormat("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          }).format(dashboardStats.grossProfit)}
-          icon="shopping_cart"
-          delta={0}
+          title="Total de Produtos"
+          value={dashboardStats.totalProducts || 0}
+          icon="inventory"
+          delta={dashboardStats.totalProductsDelta ?? 0}
           deltaLabel="vs ultimo período"
           iconColorClass="text-on-secondary-fixed-variant"
         />
@@ -580,7 +577,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex justify-between items-center font-body-md text-body-md text-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-error"></div>
+                  <div className="w-3 h-3 rounded-full bg-secondary-container"></div>
                   <span className="text-on-surface">Custos</span>
                 </div>
                 <span className="font-data-tabular text-on-surface font-medium">

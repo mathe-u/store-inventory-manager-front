@@ -442,6 +442,8 @@ export interface ApiDashboardStatsData {
   netProfitDelta: number;
   totalOrders: number;
   totalOrdersDelta: number;
+  totalProducts: number;
+  totalProductsDelta: number;
   monthlyStats: { date: string; grossRevenue: number; costs: number }[];
   marginBreakdown: {
     netProfit: number;
