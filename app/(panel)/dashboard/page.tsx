@@ -248,9 +248,9 @@ export default function DashboardPage() {
                 breakdown.deliveryTax,
               ],
               backgroundColor: [
-                "#0051d5", // secondary
-                "#316bf3", // secondary-container (intermediate blue)
-                "#e5eeff", // surface-container
+                "#0051d5", // secondary (dark blue)
+                "#60a5fa", // light-medium blue
+                "#e5eeff", // surface-container (ice blue)
               ],
               borderWidth: 2,
               borderColor: "#ffffff", // surface-container-lowest
@@ -577,7 +577,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex justify-between items-center font-body-md text-body-md text-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-secondary-container"></div>
+                  <div className="w-3 h-3 rounded-full bg-[#60a5fa]"></div>
                   <span className="text-on-surface">Custos</span>
                 </div>
                 <span className="font-data-tabular text-on-surface font-medium">
