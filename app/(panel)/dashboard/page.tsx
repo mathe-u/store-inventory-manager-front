@@ -436,10 +436,10 @@ export default function DashboardPage() {
               <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-1 flex text-[12px] font-semibold">
                 <button
                   onClick={() => setPeriod(30)}
-                  className={`px-4 py-1.5 rounded transition-colors ${
+                  className={`px-4 py-1.5 rounded transition-all duration-200 font-semibold ${
                     period === 30
-                      ? "bg-surface-container-low text-on-surface shadow-sm"
-                      : "text-on-surface-variant hover:text-on-surface"
+                      ? "bg-black text-white shadow-sm"
+                      : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
                   }`}
                 >
                   30 Dias
@@ -447,10 +447,10 @@ export default function DashboardPage() {
 
                 <button
                   onClick={() => setPeriod(90)}
-                  className={`px-4 py-1.5 rounded transition-colors ${
+                  className={`px-4 py-1.5 rounded transition-all duration-200 font-semibold ${
                     period === 90
-                      ? "bg-surface-container-low text-on-surface shadow-sm"
-                      : "text-on-surface-variant hover:text-on-surface"
+                      ? "bg-black text-white shadow-sm"
+                      : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
                   }`}
                 >
                   90 Dias
@@ -458,10 +458,10 @@ export default function DashboardPage() {
 
                 <button
                   onClick={() => setPeriod(365)}
-                  className={`px-4 py-1.5 rounded transition-colors ${
+                  className={`px-4 py-1.5 rounded transition-all duration-200 font-semibold ${
                     period === 365
-                      ? "bg-surface-container-low text-on-surface shadow-sm"
-                      : "text-on-surface-variant hover:text-on-surface"
+                      ? "bg-black text-white shadow-sm"
+                      : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
                   }`}
                 >
                   12 Meses
