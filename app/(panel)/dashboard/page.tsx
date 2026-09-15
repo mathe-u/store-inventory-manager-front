@@ -111,23 +111,54 @@ export default function DashboardPage() {
         revenueChartInstance.current.destroy();
       }
 
-      const generateLast12Months = () => {
-        const months = [];
-        const date = new Date();
+      const generateMonthsForPeriod = (days: number) => {
+        if (days >= 365) {
+          const months = [];
+          const date = new Date();
 
-        for (let i = 11; i >= 0; i--) {
-          const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
-          const apiLabel = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          for (let i = 11; i >= 0; i--) {
+            const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+            const apiLabel = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+            const formatter = new Intl.DateTimeFormat("pt-BR", {
+              month: "short",
+            });
+            const shortMonth = formatter.format(d).replace(".", "");
+            const visualLabel =
+              shortMonth.charAt(0).toUpperCase() + shortMonth.slice(1);
+
+            months.push({ apiLabel, visualLabel });
+          }
+          return months;
+        }
+
+        const months = [];
+        const now = new Date();
+        const startDate = new Date();
+        startDate.setDate(now.getDate() - days);
+
+        const current = new Date(
+          startDate.getFullYear(),
+          startDate.getMonth(),
+          1,
+        );
+        const end = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        while (current <= end) {
+          const apiLabel = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
 
           const formatter = new Intl.DateTimeFormat("pt-BR", {
             month: "short",
           });
-          const shortMonth = formatter.format(d).replace(".", "");
+          const shortMonth = formatter.format(current).replace(".", "");
           const visualLabel =
             shortMonth.charAt(0).toUpperCase() + shortMonth.slice(1);
 
           months.push({ apiLabel, visualLabel });
+
+          current.setMonth(current.getMonth() + 1);
         }
+
         return months;
       };
 
@@ -146,20 +177,22 @@ export default function DashboardPage() {
         dashboardStats.monthlyStats,
       );
 
-      const monthsConfig = generateLast12Months();
+      const monthsConfig = generateMonthsForPeriod(period);
       const labels = monthsConfig.map((month) => month.visualLabel);
 
       const revenueData = monthsConfig.map((m) => {
-        const matchedStat = dashboardStats.monthlyStats?.find(
-          (s) => normalizeToYearMonth(s.date) === m.apiLabel,
-        );
-        return matchedStat ? matchedStat.grossRevenue : 0;
+        const matchingStats =
+          dashboardStats.monthlyStats?.filter(
+            (s) => normalizeToYearMonth(s.date) === m.apiLabel,
+          ) || [];
+        return matchingStats.reduce((acc, s) => acc + (s.grossRevenue || 0), 0);
       });
       const costsData = monthsConfig.map((m) => {
-        const matchedStat = dashboardStats.monthlyStats?.find(
-          (s) => normalizeToYearMonth(s.date) === m.apiLabel,
-        );
-        return matchedStat ? matchedStat.costs : 0;
+        const matchingStats =
+          dashboardStats.monthlyStats?.filter(
+            (s) => normalizeToYearMonth(s.date) === m.apiLabel,
+          ) || [];
+        return matchingStats.reduce((acc, s) => acc + (s.costs || 0), 0);
       });
 
       revenueChartInstance.current = new Chart(revenueCostChartRef.current!, {
@@ -174,7 +207,7 @@ export default function DashboardPage() {
               borderRadius: 10,
               categoryPercentage: 0.7,
               barPercentage: 0.6,
-              // barThickness: 15,
+              maxBarThickness: 48,
             },
             {
               label: "Custos",
@@ -183,7 +216,7 @@ export default function DashboardPage() {
               borderRadius: 10,
               categoryPercentage: 0.7,
               barPercentage: 0.6,
-              // barThickness: 15,
+              maxBarThickness: 48,
             },
           ],
         },
@@ -281,7 +314,7 @@ export default function DashboardPage() {
       if (revenueChartInstance.current) revenueChartInstance.current.destroy();
       if (marginChartInstance.current) marginChartInstance.current.destroy();
     };
-  }, [dashboardStats]);
+  }, [dashboardStats, period]);
 
   // Price Evolution Chart
   useEffect(() => {
