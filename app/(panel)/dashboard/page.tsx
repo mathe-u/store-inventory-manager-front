@@ -462,7 +462,7 @@ export default function DashboardPage() {
         <>
 
       {/* Top KPIs Bento */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Gross Revenue */}
         <KpiCard
           title="Receita Bruta"
