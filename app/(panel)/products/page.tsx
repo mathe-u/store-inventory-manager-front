@@ -59,6 +59,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
@@ -271,13 +272,20 @@ export default function ProductsPage() {
   };
 
   const loadProducts = useCallback(
-    async (search?: string) => {
+    async (search?: string, catId?: string) => {
       setIsLoading(true);
       setLoadError("");
       try {
         const searchVal =
           typeof search === "string" ? search : debouncedSearchTerm;
-        const data = await getProducts(searchVal);
+        const categoryVal =
+          typeof catId === "string" ? catId : selectedCategoryId;
+        const data = await getProducts(
+          searchVal,
+          undefined,
+          undefined,
+          categoryVal || undefined,
+        );
         const productList = Array.isArray(data) ? data : (data?.products ?? []);
         setProducts(productList);
       } catch (err) {
@@ -288,12 +296,12 @@ export default function ProductsPage() {
         setIsLoading(false);
       }
     },
-    [debouncedSearchTerm],
+    [debouncedSearchTerm, selectedCategoryId],
   );
 
   useEffect(() => {
     loadProducts();
-  }, [loadProducts, debouncedSearchTerm]);
+  }, [loadProducts, debouncedSearchTerm, selectedCategoryId]);
 
   const filteredProducts = products;
 
@@ -358,16 +366,34 @@ export default function ProductsPage() {
         <>
           {/* Search and Filters */}
           <SearchFilterBar
-            placeholder="Filtrar por nome, Id ou categoria..."
+            placeholder="Filtrar por nome ou ID..."
             value={searchTerm}
             onChange={setSearchTerm}
             totalCountText={
-              searchTerm
+              searchTerm || selectedCategoryId
                 ? `Mostrando ${products.length} resultado(s)`
                 : `Total: ${products.length} produtos`
             }
             isLoading={isLoading}
-          />
+          >
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">
+                filter_alt
+              </span>
+              <select
+                value={selectedCategoryId}
+                onChange={(e) => setSelectedCategoryId(e.target.value)}
+                className="bg-surface-container-low border border-outline-variant rounded-lg text-body-md text-on-surface px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer"
+              >
+                <option value="">Todas as Categorias</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </SearchFilterBar>
 
       {/* Products Table */}
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
@@ -377,17 +403,17 @@ export default function ProductsPage() {
           <EmptyState
             icon="inventory_2"
             title={
-              searchTerm
+              searchTerm || selectedCategoryId
                 ? "Nenhum produto encontrado"
                 : "Nenhum produto cadastrado"
             }
             description={
-              searchTerm
-                ? `Nenhum produto corresponde ao filtro "${searchTerm}".`
+              searchTerm || selectedCategoryId
+                ? "Nenhum produto corresponde aos filtros aplicados."
                 : "Nenhum produto cadastrado ainda. Comece cadastrando seu primeiro produto."
             }
             actionButton={
-              searchTerm
+              searchTerm || selectedCategoryId
                 ? undefined
                 : {
                     label: "Cadastrar Produto",

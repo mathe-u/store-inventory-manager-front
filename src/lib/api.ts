@@ -176,9 +176,11 @@ export async function getProducts(
   search?: string,
   page?: number,
   limit?: number,
+  categoryId?: string,
 ): Promise<ApiProductsResponse> {
   const params = new URLSearchParams();
   if (search) params.set("search", search);
+  if (categoryId) params.set("categoryId", categoryId);
   if (page) params.set("page", page.toString());
   if (limit) params.set("limit", limit.toString());
   const query = params.toString();
