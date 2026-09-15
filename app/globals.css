@@ -106,3 +106,28 @@ body {
   display: inline-block;
   line-height: 1;
 }
+
+/* Auto-scrolling product name (marquee) */
+@keyframes marquee-scroll {
+  0%, 15% { transform: translateX(0); }
+  85%, 100% { transform: translateX(var(--marquee-offset)); }
+}
+
+.marquee-name {
+  overflow: hidden;
+  position: relative;
+  max-width: 180px;
+}
+
+.marquee-name .marquee-inner {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.marquee-name.has-overflow .marquee-inner {
+  animation: marquee-scroll 6s ease-in-out infinite alternate;
+}
+
+.marquee-name.has-overflow:hover .marquee-inner {
+  animation-play-state: paused;
+}

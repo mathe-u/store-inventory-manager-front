@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   getDashboardStats,
   getProductPriceEvolution,
@@ -12,6 +12,44 @@ import Link from "next/link";
 import PageHeader from "@/src/components/PageHeader";
 import KpiCard from "@/src/components/KpiCard";
 import ErrorState from "@/src/components/ErrorState";
+
+// Auto-scrolling product name for the bestselling table
+function MarqueeName({ name }: { name: string }) {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLSpanElement>(null);
+  const [hasOverflow, setHasOverflow] = useState(false);
+
+  const computeOffset = useCallback(() => {
+    if (!outerRef.current || !innerRef.current) return;
+    const overflow =
+      innerRef.current.scrollWidth - outerRef.current.clientWidth;
+    if (overflow > 2) {
+      outerRef.current.style.setProperty("--marquee-offset", `-${overflow + 4}px`);
+      setHasOverflow(true);
+    } else {
+      outerRef.current.style.setProperty("--marquee-offset", "0px");
+      setHasOverflow(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    computeOffset();
+    window.addEventListener("resize", computeOffset);
+    return () => window.removeEventListener("resize", computeOffset);
+  }, [name, computeOffset]);
+
+  return (
+    <div
+      ref={outerRef}
+      className={`marquee-name ${hasOverflow ? "has-overflow" : ""}`}
+      title={name}
+    >
+      <span ref={innerRef} className="marquee-inner text-on-surface font-medium">
+        {name}
+      </span>
+    </div>
+  );
+}
 
 Chart.defaults.font.family = "JetBrains Mono, monospace";
 Chart.defaults.color = "#76777d";
@@ -720,9 +758,7 @@ export default function DashboardPage() {
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="text-on-surface font-medium truncate w-32 md:w-auto">
-                            {product.name}
-                          </p>
+                          <MarqueeName name={product.name} />
                           <p className="text-on-surface-variant text-xs">
                             {product.category}
                           </p>
