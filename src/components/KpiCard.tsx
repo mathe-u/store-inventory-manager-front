@@ -51,7 +51,7 @@ export default function KpiCard({
               {Math.abs(delta * 100).toFixed(1)}%
             </span>
             {deltaLabel && (
-              <span className="font-body-md text-body-md text-on-surface-variant text-xs">
+              <span className="font-body-md text-body-md text-on-surface-variant-2 text-xs">
                 {deltaLabel}
               </span>
             )}

@@ -233,6 +233,10 @@ export default function DashboardPage() {
         return matchingStats.reduce((acc, s) => acc + (s.costs || 0), 0);
       });
 
+      const textColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--color-on-surface-variant-2')
+      .trim() || "#0a0afcff";
+
       revenueChartInstance.current = new Chart(revenueCostChartRef.current!, {
         type: "bar",
         data: {
@@ -281,6 +285,7 @@ export default function DashboardPage() {
               beginAtZero: true,
               border: { display: false },
               ticks: {
+                color: textColor,
                 callback: function (value: string | number) {
                   return (value as number) > 1000
                     ? "R$" + (value as number) / 1000 + "k"
@@ -290,6 +295,9 @@ export default function DashboardPage() {
             },
             x: {
               grid: { display: false },
+              ticks: {
+                color: textColor,
+              },
             },
           },
         },
@@ -471,13 +479,13 @@ export default function DashboardPage() {
         rightContent={
           error ? undefined : (
             <div className="flex items-center gap-3">
-              <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-1 flex text-[12px] font-semibold">
+              <div className="bg-surface-container-lowest-variant border border-outline-variant rounded-lg p-1 flex text-[12px] font-semibold">
                 <button
                   onClick={() => setPeriod(30)}
                   className={`px-4 py-1.5 rounded transition-all duration-200 font-semibold ${
                     period === 30
-                      ? "bg-black text-white shadow-sm"
-                      : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+                      ? "bg-white text-on-surface shadow-sm"
+                      : "text-on-surface-variant hover:text-on-surface"
                   }`}
                 >
                   30 Dias
@@ -487,8 +495,8 @@ export default function DashboardPage() {
                   onClick={() => setPeriod(90)}
                   className={`px-4 py-1.5 rounded transition-all duration-200 font-semibold ${
                     period === 90
-                      ? "bg-black text-white shadow-sm"
-                      : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+                      ? "bg-white text-on-surface shadow-sm"
+                      : "text-on-surface-variant hover:text-on-surface"
                   }`}
                 >
                   90 Dias
@@ -498,8 +506,8 @@ export default function DashboardPage() {
                   onClick={() => setPeriod(365)}
                   className={`px-4 py-1.5 rounded transition-all duration-200 font-semibold ${
                     period === 365
-                      ? "bg-black text-white shadow-sm"
-                      : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+                      ? "bg-white text-on-surface shadow-sm"
+                      : "text-on-surface-variant hover:text-on-surface"
                   }`}
                 >
                   12 Meses
@@ -544,7 +552,7 @@ export default function DashboardPage() {
           icon="payments"
           delta={dashboardStats.grossRevenueDelta}
           deltaLabel="vs ultimo período"
-          iconColorClass="text-primary"
+          iconColorClass="text-on-surface-variant"
         />
 
         {/* KPI 2: Net Profit */}
@@ -557,7 +565,7 @@ export default function DashboardPage() {
           icon="account_balance_wallet"
           delta={dashboardStats.netProfitDelta}
           deltaLabel="vs ultimo período"
-          iconColorClass="text-primary"
+          iconColorClass="text-on-surface-variant"
         />
 
         {/* KPI 3: Total Orders */}
@@ -567,7 +575,7 @@ export default function DashboardPage() {
           icon="local_shipping"
           delta={dashboardStats.totalOrdersDelta}
           deltaLabel="vs ultimo período"
-          iconColorClass="text-primary"
+          iconColorClass="text-on-surface-variant"
         />
 
         {/* KPI 4: Total Products */}
@@ -577,7 +585,7 @@ export default function DashboardPage() {
           icon="inventory"
           delta={dashboardStats.totalProductsDelta ?? 0}
           deltaLabel="vs ultimo período"
-          iconColorClass="text-primary"
+          iconColorClass="text-on-surface-variant"
         />
       </div>
 
@@ -627,7 +635,7 @@ export default function DashboardPage() {
                   ).toFixed(1)}
                   %
                 </span>
-                <span className="font-label-sm text-label-sm text-on-surface-variant">
+                <span className="font-label-sm text-label-sm text-on-surface-variant-2">
                   Margem Média
                 </span>
               </div>
@@ -706,7 +714,7 @@ export default function DashboardPage() {
 
         {/* Bestselling Products Table */}
         <div className="bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col h-[450px] overflow-hidden">
-          <div className="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest z-10">
+          <div className="p-5 flex justify-between items-center bg-surface-container-lowest z-10">
             <h3 className="font-headline-md text-headline-md text-on-surface">
               Produtos Mais Vendidos
             </h3>
@@ -721,13 +729,13 @@ export default function DashboardPage() {
             <table className="w-full text-left border-collapse">
               <thead className="sticky top-0 bg-surface-container-lowest border-b border-outline-variant shadow-sm z-10">
                 <tr>
-                  <th className="font-label-sm text-label-sm text-on-surface-variant py-3 px-5 font-semibold">
+                  <th className="font-label-sm text-label-sm text-on-surface-variant-2 py-3 px-5 font-semibold">
                     Produto
                   </th>
-                  <th className="font-label-sm text-label-sm text-on-surface-variant py-3 px-5 font-semibold text-right">
+                  <th className="font-label-sm text-label-sm text-on-surface-variant-2 py-3 px-5 font-semibold text-right">
                     Unidades
                   </th>
-                  <th className="font-label-sm text-label-sm text-on-surface-variant py-3 px-5 font-semibold text-right">
+                  <th className="font-label-sm text-label-sm text-on-surface-variant-2 py-3 px-5 font-semibold text-right">
                     Receita
                   </th>
                 </tr>
@@ -759,7 +767,7 @@ export default function DashboardPage() {
                         )}
                         <div className="min-w-0">
                           <MarqueeName name={product.name} />
-                          <p className="text-on-surface-variant text-xs">
+                          <p className="text-on-surface-variant-2 text-xs">
                             {product.category}
                           </p>
                         </div>
