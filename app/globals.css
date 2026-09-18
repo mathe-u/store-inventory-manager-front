@@ -1,4 +1,9 @@
 @import "tailwindcss";
+/* #6ffbbe */
+/* #0b1c30 */
+/* #45464d */
+/* #94a3b8 */
+
 
 @theme {
   --color-on-surface: #0b1c30;
@@ -18,7 +23,7 @@
   --color-primary-fixed: #dae2fd;
   --color-outline-variant: #c6c6cd;
   --color-on-tertiary-fixed: #002113;
-  --color-tertiary-fixed: #6ffbbe;
+  --color-tertiary-fixed: #d1ffe4;
   --color-surface-dim: #cbdbf5;
   --color-surface-container: #e5eeff;
   --color-secondary-fixed: #dbe1ff;
@@ -43,7 +48,7 @@
   --color-primary-fixed-dim: #bec6e0;
   --color-background: #f8f9ff;
   --color-surface-container-high: #dce9ff;
-  --color-on-surface-variant: #45464d;
+  --color-on-surface-variant: #94a3b8;
   --color-tertiary-container: #002113;
   --color-on-primary-fixed: #131b2e;
   --color-on-tertiary-fixed-variant: #005236;

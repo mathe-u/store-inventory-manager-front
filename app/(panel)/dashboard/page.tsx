@@ -544,7 +544,7 @@ export default function DashboardPage() {
           icon="payments"
           delta={dashboardStats.grossRevenueDelta}
           deltaLabel="vs ultimo período"
-          iconColorClass="text-secondary"
+          iconColorClass="text-primary"
         />
 
         {/* KPI 2: Net Profit */}
@@ -557,7 +557,7 @@ export default function DashboardPage() {
           icon="account_balance_wallet"
           delta={dashboardStats.netProfitDelta}
           deltaLabel="vs ultimo período"
-          iconColorClass="text-on-tertiary-container"
+          iconColorClass="text-primary"
         />
 
         {/* KPI 3: Total Orders */}
@@ -577,7 +577,7 @@ export default function DashboardPage() {
           icon="inventory"
           delta={dashboardStats.totalProductsDelta ?? 0}
           deltaLabel="vs ultimo período"
-          iconColorClass="text-on-secondary-fixed-variant"
+          iconColorClass="text-primary"
         />
       </div>
 
