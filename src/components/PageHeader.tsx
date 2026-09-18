@@ -25,7 +25,7 @@ export default function PageHeader({
   rightContent,
 }: PageHeaderProps) {
   return (
-    <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-outline-variant pb-4 mb-4">
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
       <div>
         {breadcrumbs && breadcrumbs.length > 0 && (
           <div className="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm mb-2 flex-wrap">
