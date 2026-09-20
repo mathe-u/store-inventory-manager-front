@@ -344,7 +344,6 @@ export default function ProductsPage() {
           { label: "Produtos", icon: "inventory_2" },
           { label: "Catálogo de Produtos" },
         ]}
-        onRefresh={loadProducts}
         actionButton={
           loadError || !isAdmin
             ? undefined

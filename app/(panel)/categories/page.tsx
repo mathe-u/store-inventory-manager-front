@@ -285,7 +285,6 @@ export default function CategoriesPage() {
           { label: "Categorias", icon: "category" },
           { label: "Lista de Categorias" },
         ]}
-        onRefresh={loadCategories}
         actionButton={
           loadError
             ? undefined

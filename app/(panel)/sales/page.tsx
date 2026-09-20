@@ -200,7 +200,6 @@ export default function SalesPage() {
           { label: "vendas", icon: "payments" },
           { label: "histórico de transações" },
         ]}
-        onRefresh={loadSales}
         actionButton={
           loadError
             ? undefined
