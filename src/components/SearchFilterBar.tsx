@@ -34,10 +34,10 @@ export default function SearchFilterBar({
           {icon}
         </span>
         <input
-          className={`w-full bg-surface-container-low text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none ${
+          className={`w-full h-9 bg-background/70 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none ${
             hasChildren
-              ? "border border-outline-variant rounded-lg pl-10 pr-4 py-2"
-              : "border-none rounded-DEFAULT py-2 pl-9 pr-4"
+              ? "border border-outline-variant rounded-lg pl-10 pr-4"
+              : "border border-background-variant/80 rounded-lg pl-9 pr-4"
           }`}
           placeholder={placeholder}
           type="text"
@@ -51,7 +51,7 @@ export default function SearchFilterBar({
       )}
 
       {totalCountText && (
-        <div className="text-label-sm text-on-surface-variant font-medium whitespace-nowrap ml-auto">
+        <div className="h-9 px-3 flex items-center rounded-lg text-sm text-on-surface-variant font-medium border border-outline-variant bg-surface-container-lowest-variant whitespace-nowrap ml-auto">
           {isLoading ? "Carregando..." : totalCountText}
         </div>
       )}

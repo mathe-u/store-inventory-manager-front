@@ -383,7 +383,7 @@ export default function ProductsPage() {
               <select
                 value={selectedCategoryId}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
-                className="bg-surface-container-low border border-outline-variant rounded-lg text-body-md text-on-surface px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer"
+                className="h-9 bg-surface-container-lowest border border-outline-variant rounded-lg text-sm text-on-surface px-3 hover:bg-background focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer"
               >
                 <option value="">Todas as Categorias</option>
                 {categories.map((cat) => (
@@ -426,7 +426,7 @@ export default function ProductsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-container border-b border-outline-variant text-on-surface font-label-sm text-label-sm">
+                <tr className="bg-background/75 border-b border-background-variant text-on-surface-variant font-label-sm text-label-sm">
                   <th className="p-4 font-semibold w-14"></th>
                   <th className="p-4 font-semibold">Nome</th>
                   <th className="p-4 font-semibold">Categoria</th>
@@ -456,7 +456,7 @@ export default function ProductsPage() {
                     <tr
                       key={p.id}
                       onClick={() => handleRowClick(p)}
-                      className="border-b border-outline-variant/60 hover:bg-surface-container-low transition-colors cursor-pointer"
+                      className="border-b border-outline-variant/60 hover:bg-background transition-colors cursor-pointer"
                     >
                       <td className="p-4">
                         <ProductImage url={p.imageUrl} name={p.name} />

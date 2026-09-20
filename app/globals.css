@@ -47,7 +47,8 @@
   --color-surface-tint: #565e74;
   --color-on-primary-fixed-variant: #3f465c;
   --color-primary-fixed-dim: #bec6e0;
-  --color-background: #f8fafc;
+  --color-background: #f8fafc; /* slate-50 */
+  --color-background-variant: #e2e8f0; /* slate-200 */
   --color-surface-container-high: #dce9ff;
   --color-on-surface-variant: #64748b;
   --color-on-surface-variant-2: #94a3b8;
