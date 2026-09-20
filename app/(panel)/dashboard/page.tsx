@@ -12,6 +12,7 @@ import Link from "next/link";
 import PageHeader from "@/src/components/PageHeader";
 import KpiCard from "@/src/components/KpiCard";
 import ErrorState from "@/src/components/ErrorState";
+import ProductImage from "@/src/components/ProductImage";
 
 // Auto-scrolling product name for the bestselling table
 function MarqueeName({ name }: { name: string }) {
@@ -749,22 +750,10 @@ export default function DashboardPage() {
                       className="zebra-stripe border-b border-outline-variant/30 hover:bg-surface-container-low transition-colors group cursor-pointer"
                     >
                       <td className="py-3 px-5 flex items-center gap-3">
-                        {product.imageUrl ? (
-                          <img
-                            alt={product.name}
-                            className="w-10 h-10 rounded-md border border-outline-variant object-cover"
-                            src={product.imageUrl}
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-md border border-outline-variant bg-surface-container-high flex items-center justify-center text-on-surface-variant flex-shrink-0">
-                            <span
-                              className="material-symbols-outlined"
-                              style={{ fontSize: "20px" }}
-                            >
-                              inventory_2
-                            </span>
-                          </div>
-                        )}
+                        <ProductImage
+                          url={product.imageUrl}
+                          name={product.name}
+                        />
                         <div className="min-w-0">
                           <MarqueeName name={product.name} />
                           <p className="text-on-surface-variant-2 text-xs">
