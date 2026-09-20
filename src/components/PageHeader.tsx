@@ -96,8 +96,8 @@ export default function PageHeader({
                 href={actionButton.href}
                 className={
                   actionButton.variant === "outlined"
-                    ? "px-4 py-2.5 rounded-DEFAULT border border-outline text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-lowest transition-colors cursor-pointer flex items-center gap-2 shadow-sm font-semibold"
-                    : "px-4 py-2.5 rounded-DEFAULT bg-secondary text-on-secondary font-label-sm text-label-sm hover:bg-opacity-90 transition-colors flex items-center gap-2 shadow-sm font-semibold cursor-pointer"
+                    ? "px-4 py-2 rounded-lg border border-outline text-on-surface-variant text-[12px] font-semibold hover:bg-surface-container-lowest transition-colors cursor-pointer flex items-center gap-2"
+                    : "bg-primary text-on-primary px-4 py-2 rounded-lg text-[12px] font-semibold flex items-center gap-2 hover:bg-inverse-surface transition-colors cursor-pointer"
                 }
               >
                 {actionButton.icon && (
@@ -112,8 +112,8 @@ export default function PageHeader({
                 onClick={actionButton.onClick}
                 className={
                   actionButton.variant === "outlined"
-                    ? "px-4 py-2.5 rounded-DEFAULT border border-outline text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-lowest transition-colors cursor-pointer flex items-center gap-2 shadow-sm font-semibold"
-                    : "px-4 py-2.5 rounded-DEFAULT bg-secondary text-on-secondary font-label-sm text-label-sm hover:bg-opacity-90 transition-colors flex items-center gap-2 shadow-sm font-semibold cursor-pointer"
+                    ? "px-4 py-2 rounded-lg border border-outline text-on-surface-variant text-[12px] font-semibold hover:bg-surface-container-lowest transition-colors cursor-pointer flex items-center gap-2"
+                    : "bg-primary text-on-primary px-4 py-2 rounded-lg text-[12px] font-semibold flex items-center gap-2 hover:bg-inverse-surface transition-colors cursor-pointer"
                 }
               >
                 {actionButton.icon && (
