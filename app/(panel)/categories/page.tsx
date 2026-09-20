@@ -349,7 +349,7 @@ export default function CategoriesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-container border-b border-outline-variant text-on-surface font-label-sm text-label-sm">
+                <tr className="bg-background/75 border-b border-outline-variant text-on-surface-variant font-label-sm text-label-sm">
                   <th className="p-4 font-semibold">Categoria</th>
                   <th className="p-4 font-semibold">Descrição</th>
                   <th className="p-4 font-semibold text-center">Produtos</th>
@@ -362,7 +362,7 @@ export default function CategoriesPage() {
                   <tr
                     key={cat.id}
                     onClick={() => openEdit(cat)}
-                    className="border-b border-outline-variant/60 hover:bg-surface-container-low transition-colors cursor-pointer"
+                    className="border-b border-outline-variant/60 hover:bg-background transition-colors cursor-pointer"
                   >
                     <td className="p-4">
                       <div className="flex items-center gap-2.5">
@@ -402,7 +402,7 @@ export default function CategoriesPage() {
                         </button>
                         <button
                           onClick={() => setDeleteTarget(cat)}
-                          className="p-1.5 rounded hover:bg-error-container text-outline hover:text-error transition-colors cursor-pointer"
+                          className="p-1.5 text-on-surface-variant-2 rounded hover:bg-error-container text-outline hover:text-error transition-colors cursor-pointer"
                           title="Remover"
                         >
                           <span className="material-symbols-outlined text-[20px]">
