@@ -71,7 +71,7 @@ export default function DashboardLayout({
     <UserContext.Provider value={{ user }}>
     <div className="min-h-screen bg-background font-body-md text-body-md text-on-background">
       {/* SideNavBar */}
-      <nav className="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface flex flex-col py-spacing-stack-default z-50">
+      <nav className="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface-container-lowest flex flex-col py-spacing-stack-default z-50">
         <div className="px-6 mb-8 mt-2">
           <Link href="/dashboard" className="hover:opacity-90">
             <h1 className="font-display-lg text-display-lg text-on-surface">
@@ -83,129 +83,143 @@ export default function DashboardLayout({
           </p>
         </div>
 
-        <ul className="flex flex-col flex-grow gap-1 px-4">
+        <nav className="flex flex-col flex-grow space-y-1.5 px-3" data-purpose="nav-links">
           {/* Item: Dashboard */}
-          <li>
-            <Link
-              href="/dashboard"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${
-                isDashboardActive
-                  ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
-                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+          <Link
+            href="/dashboard"
+            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-colors group ${
+              isDashboardActive
+                ? "font-semibold text-slate-900 bg-slate-100"
+                : "font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            <svg
+              className={`w-5 h-5 ${
+                isDashboardActive ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
               }`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              viewBox="0 0 24 24"
             >
-              <span
-                className="material-symbols-outlined"
-                style={{
-                  fontVariationSettings: isDashboardActive
-                    ? "'FILL' 1"
-                    : "'FILL' 0",
-                }}
-              >
-                dashboard
-              </span>
-              <span className="font-body-md text-body-md">Dashboard</span>
-            </Link>
-          </li>
+              <rect height="7" rx="1.5" width="7" x="3" y="3"></rect>
+              <rect height="7" rx="1.5" width="7" x="14" y="3"></rect>
+              <rect height="7" rx="1.5" width="7" x="14" y="14"></rect>
+              <rect height="7" rx="1.5" width="7" x="3" y="14"></rect>
+            </svg>
+            <span>Dashboard</span>
+          </Link>
 
-          {/* Item: Inventory */}
-          <li>
-            <Link
-              href="/products"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${
-                isProductsActive
-                  ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
-                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+          {/* Item: Inventory / Produtos */}
+          <Link
+            href="/products"
+            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-colors group ${
+              isProductsActive
+                ? "font-semibold text-slate-900 bg-slate-100"
+                : "font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            <svg
+              className={`w-5 h-5 ${
+                isProductsActive ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
               }`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              viewBox="0 0 24 24"
             >
-              <span
-                className="material-symbols-outlined"
-                style={{
-                  fontVariationSettings: isProductsActive
-                    ? "'FILL' 1"
-                    : "'FILL' 0",
-                }}
-              >
-                inventory_2
-              </span>
-              <span className="font-body-md text-body-md">Produtos</span>
-            </Link>
-          </li>
+              <path
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </svg>
+            <span>Produtos</span>
+          </Link>
 
-          {/* Item: Sales */}
-          <li>
-            <Link
-              href="/sales"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${
-                isSalesActive
-                  ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
-                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+          {/* Item: Sales / Vendas */}
+          <Link
+            href="/sales"
+            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-colors group ${
+              isSalesActive
+                ? "font-semibold text-slate-900 bg-slate-100"
+                : "font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            <svg
+              className={`w-5 h-5 ${
+                isSalesActive ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
               }`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              viewBox="0 0 24 24"
             >
-              <span
-                className="material-symbols-outlined"
-                style={{
-                  fontVariationSettings: isSalesActive
-                    ? "'FILL' 1"
-                    : "'FILL' 0",
-                }}
-              >
-                receipt_long
-              </span>
-              <span className="font-body-md text-body-md">Vendas</span>
-            </Link>
-          </li>
+              <path
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </svg>
+            <span>Vendas</span>
+          </Link>
 
-          {/* Item: Categories */}
-          <li>
-            <Link
-              href="/categories"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${
-                isCategoriesActive
-                  ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
-                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+          {/* Item: Categories / Categorias */}
+          <Link
+            href="/categories"
+            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-colors group ${
+              isCategoriesActive
+                ? "font-semibold text-slate-900 bg-slate-100"
+                : "font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            <svg
+              className={`w-5 h-5 ${
+                isCategoriesActive ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
               }`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              viewBox="0 0 24 24"
             >
-              <span
-                className="material-symbols-outlined"
-                style={{
-                  fontVariationSettings: isCategoriesActive
-                    ? "'FILL' 1"
-                    : "'FILL' 0",
-                }}
-              >
-                category
-              </span>
-              <span className="font-body-md text-body-md">Categorias</span>
-            </Link>
-          </li>
+              <path
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </svg>
+            <span>Categorias</span>
+          </Link>
 
           {/* Item: Reports — somente ADMIN */}
-          {isAdmin && (
-            <li>
-              <Link
-                href="/reports"
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors active:scale-95 duration-100 ${
-                  isReportsActive
-                    ? "text-secondary font-bold border-r-4 border-secondary bg-surface-container-high"
-                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+          {/* {isAdmin && (
+            <Link
+              href="/reports"
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-colors group ${
+                isReportsActive
+                  ? "font-semibold text-slate-900 bg-slate-100"
+                  : "font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+              }`}
+            >
+              <svg
+                className={`w-5 h-5 ${
+                  isReportsActive ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
                 }`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                viewBox="0 0 24 24"
               >
-                <span
-                  className="material-symbols-outlined"
-                  style={{
-                    fontVariationSettings: isReportsActive
-                      ? "'FILL' 1"
-                      : "'FILL' 0",
-                  }}
-                >
-                  analytics
-                </span>
-                <span className="font-body-md text-body-md">Relatórios</span>
-              </Link>
-            </li>
-          )}
-        </ul>
+                <path
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                ></path>
+              </svg>
+              <span>Relatórios</span>
+            </Link>
+          )} */}
+        </nav>
 
         {/* Área do Perfil */}
         <div className="px-6 mt-auto">
