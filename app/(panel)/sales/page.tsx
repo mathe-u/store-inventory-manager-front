@@ -299,7 +299,7 @@ export default function SalesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-container border-b border-outline-variant text-on-surface font-label-sm text-label-sm">
+                <tr className="bg-background/75 border-b border-outline-variant text-on-surface-variant font-label-sm text-label-sm">
                   <th className="p-4 font-semibold">Data</th>
                   <th className="p-4 font-semibold">Produto</th>
                   <th className="p-4 font-semibold">Cliente</th>
@@ -317,7 +317,7 @@ export default function SalesPage() {
                   <tr
                     key={sale.id}
                     onClick={() => setDetailTarget(sale)}
-                    className="border-b border-outline-variant/60 hover:bg-surface-container-low transition-colors cursor-pointer"
+                    className="border-b border-outline-variant/60 hover:bg-background transition-colors cursor-pointer"
                   >
                     <td className="p-4 font-data-tabular text-on-surface-variant text-sm whitespace-nowrap">
                       {formatDate(sale.createdAt)}
@@ -343,9 +343,9 @@ export default function SalesPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 text-on-surface-variant text-sm whitespace-nowrap">
+                    <td className="p-4 text-on-surface-variant-2 text-sm whitespace-nowrap">
                       {sale.customerName || (
-                        <span className="italic opacity-50">
+                        <span className="opacity-100">
                           Cliente Balcão
                         </span>
                       )}
@@ -399,7 +399,7 @@ export default function SalesPage() {
                           className="p-1.5 rounded hover:bg-error-container text-outline hover:text-error transition-colors cursor-pointer"
                           title="Remover"
                         >
-                          <span className="material-symbols-outlined text-[20px]">
+                          <span className="material-symbols-outlined text-on-surface-variant-2 text-[20px]">
                             delete
                           </span>
                         </button>

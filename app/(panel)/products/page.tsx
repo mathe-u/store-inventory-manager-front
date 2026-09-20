@@ -503,10 +503,10 @@ export default function ProductsPage() {
                           {isAdmin && (
                             <button
                               onClick={(e) => handleDeleteClick(p, e)}
-                              className="p-2 text-on-surface-variant-2 rounded hover:bg-error-container text-outline hover:text-error transition-colors cursor-pointer"
+                              className="p-2 rounded hover:bg-error-container text-outline hover:text-error transition-colors cursor-pointer"
                               title="Deletar Produto"
                             >
-                              <span className="material-symbols-outlined text-[20px]">
+                              <span className="material-symbols-outlined text-on-surface-variant-2 text-[20px]">
                                 delete
                               </span>
                             </button>

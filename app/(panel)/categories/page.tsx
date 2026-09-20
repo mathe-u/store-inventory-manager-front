@@ -404,7 +404,7 @@ export default function CategoriesPage() {
                           className="p-1.5 text-on-surface-variant-2 rounded hover:bg-error-container text-outline hover:text-error transition-colors cursor-pointer"
                           title="Remover"
                         >
-                          <span className="material-symbols-outlined text-[20px]">
+                          <span className="material-symbols-outlined text-on-surface-variant-2 text-[20px]">
                             delete
                           </span>
                         </button>
