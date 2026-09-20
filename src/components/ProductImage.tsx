@@ -20,10 +20,10 @@ export default function ProductImage({
   if (!url) {
     return (
       <div
-        className={`${dim} rounded-lg bg-surface-container border border-outline-variant flex items-center justify-center flex-shrink-0`}
+        className={`${dim} rounded-lg bg-surface-container-lowest-variant border border-background-variant flex items-center justify-center flex-shrink-0`}
       >
         <span
-          className={`material-symbols-outlined text-on-surface-variant ${iconSize}`}
+          className={`material-symbols-outlined text-on-surface-variant-2 ${iconSize}`}
         >
           image_not_supported
         </span>
