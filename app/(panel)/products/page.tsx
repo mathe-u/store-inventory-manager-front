@@ -20,6 +20,7 @@ import Badge from "@/src/components/Badge";
 import ErrorAlert from "@/src/components/ErrorAlert";
 import ErrorState from "@/src/components/ErrorState";
 import ProductImage from "@/src/components/ProductImage";
+import TablePagination from "@/src/components/TablePagination";
 import { useUser } from "@/src/contexts/UserContext";
 
 // Helper: parse the raw metadata JSON string from the API
@@ -422,7 +423,8 @@ export default function ProductsPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-background/75 border-b border-background-variant text-on-surface-variant font-label-sm text-label-sm">
@@ -455,7 +457,7 @@ export default function ProductsPage() {
                     <tr
                       key={p.id}
                       onClick={() => handleRowClick(p)}
-                      className="border-b border-outline-variant/60 hover:bg-background transition-colors cursor-pointer"
+                      className="border-b last:border-b-0 border-outline-variant/60 hover:bg-background transition-colors cursor-pointer"
                     >
                       <td className="p-4">
                         <ProductImage url={p.imageUrl} name={p.name} />
@@ -519,6 +521,8 @@ export default function ProductsPage() {
               </tbody>
             </table>
           </div>
+          <TablePagination />
+        </>
         )}
       </div>
         </>

@@ -19,6 +19,7 @@ import ErrorState from "@/src/components/ErrorState";
 import Badge, { BadgeVariant } from "@/src/components/Badge";
 import Modal from "@/src/components/Modal";
 import ProductImage from "@/src/components/ProductImage";
+import TablePagination from "@/src/components/TablePagination";
 
 export default function SalesPage() {
   const [sales, setSales] = useState<ApiSale[]>([]);
@@ -296,7 +297,8 @@ export default function SalesPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-background/75 border-b border-outline-variant text-on-surface-variant font-label-sm text-label-sm">
@@ -317,7 +319,7 @@ export default function SalesPage() {
                   <tr
                     key={sale.id}
                     onClick={() => setDetailTarget(sale)}
-                    className="border-b border-outline-variant/60 hover:bg-background transition-colors cursor-pointer"
+                    className="border-b last:border-b-0 border-outline-variant/60 hover:bg-background transition-colors cursor-pointer"
                   >
                     <td className="p-4 font-data-tabular text-on-surface-variant text-sm whitespace-nowrap">
                       {formatDate(sale.createdAt)}
@@ -410,6 +412,8 @@ export default function SalesPage() {
               </tbody>
             </table>
           </div>
+          <TablePagination />
+        </>
         )}
       </div>
         </>

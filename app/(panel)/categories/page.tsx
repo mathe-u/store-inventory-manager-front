@@ -17,6 +17,7 @@ import EmptyState from "@/src/components/EmptyState";
 import Badge from "@/src/components/Badge";
 import ErrorAlert from "@/src/components/ErrorAlert";
 import ErrorState from "@/src/components/ErrorState";
+import TablePagination from "@/src/components/TablePagination";
 
 const PRESET_COLORS = [
   "#0051d5",
@@ -345,7 +346,8 @@ export default function CategoriesPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-background/75 border-b border-outline-variant text-on-surface-variant font-label-sm text-label-sm">
@@ -361,7 +363,7 @@ export default function CategoriesPage() {
                   <tr
                     key={cat.id}
                     onClick={() => openEdit(cat)}
-                    className="border-b border-outline-variant/60 hover:bg-background transition-colors cursor-pointer"
+                    className="border-b last:border-b-0 border-outline-variant/60 hover:bg-background transition-colors cursor-pointer"
                   >
                     <td className="p-4">
                       <div className="flex items-center gap-2.5">
@@ -415,6 +417,8 @@ export default function CategoriesPage() {
               </tbody>
             </table>
           </div>
+          <TablePagination />
+        </>
         )}
       </div>
         </>
