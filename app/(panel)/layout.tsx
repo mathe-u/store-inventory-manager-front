@@ -64,12 +64,13 @@ export default function DashboardLayout({
   const isSalesActive = pathname.startsWith("/sales");
   const isCategoriesActive = pathname.startsWith("/categories");
   const isReportsActive = pathname.startsWith("/reports");
+  const isProfileActive = pathname.startsWith("/profile");
 
   const isAdmin = user?.role === "ADMIN";
 
   return (
     <UserContext.Provider value={{ user }}>
-    <div className="min-h-screen bg-background font-body-md text-body-md text-on-background">
+    <div className="min-h-screen bg-background font-body-md text-body-md text-on-surface">
       {/* SideNavBar */}
       <nav className="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface-container-lowest flex flex-col py-spacing-stack-default z-50">
         <div className="px-6 mb-8 mt-2">
@@ -222,28 +223,37 @@ export default function DashboardLayout({
         </nav>
 
         {/* Área do Perfil */}
-        <div className="px-6 mt-auto">
-          <div className="flex items-center gap-3 pt-4 border-t border-outline-variant">
-            <div className="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden relative">
-              <Image
-                alt="User profile photo"
-                className="object-cover"
-                src="/next.svg"
-                fill
-                sizes="40px"
-              />
-            </div>
-            <div className="flex-grow">
-              <p className="font-body-md text-body-md font-semibold text-on-surface">
-                {user ? user.name : "Carregando..."}
-              </p>
-              <p className="font-label-sm text-label-sm text-on-surface-variant">
-                {user ? user.role.toLowerCase() : ""}
-              </p>
-            </div>
+        <div className="px-3 mt-auto">
+          <div
+            className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${
+              isProfileActive
+                ? "bg-slate-100 border-slate-300 dark:bg-slate-800 dark:border-slate-700"
+                : "border-outline-variant/60 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+            }`}
+          >
+            <Link
+              href="/profile"
+              className="flex items-center gap-3 flex-grow min-w-0 group cursor-pointer"
+              title="Ver perfil do usuário"
+            >
+              <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                {user ? user.name.charAt(0).toUpperCase() : "U"}
+              </div>
+              <div className="flex-grow min-w-0">
+                <p className="font-body-md text-body-md font-semibold text-on-surface truncate group-hover:text-secondary transition-colors">
+                  {user ? user.name : "Carregando..."}
+                </p>
+                <p className="font-label-sm text-label-sm text-on-surface-variant truncate capitalize">
+                  {user ? user.role.toLowerCase() : ""}
+                </p>
+              </div>
+            </Link>
             <button
-              onClick={handleLogout}
-              className="p-1.5 rounded-lg text-error hover:bg-error-container/20 transition-colors flex items-center justify-center cursor-pointer active:scale-95 duration-100"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLogout();
+              }}
+              className="p-1.5 rounded-lg text-error hover:bg-error-container/20 transition-colors flex items-center justify-center cursor-pointer active:scale-95 duration-100 flex-shrink-0"
               title="Sair"
             >
               <span className="material-symbols-outlined text-[20px]">

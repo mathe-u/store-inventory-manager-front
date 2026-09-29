@@ -512,3 +512,22 @@ export function parseJwt(token: string): JwtPayload | null {
 export async function getUserById(id: string): Promise<ApiUser> {
   return apiFetch<ApiUser>(`users/${id}`);
 }
+
+export interface UpdateUserBody {
+  name?: string;
+  email?: string;
+  password?: string;
+  role?: "ADMIN" | "SELLER";
+  isActive?: boolean;
+}
+
+export async function updateUser(
+  id: string,
+  body: UpdateUserBody,
+): Promise<ApiUser> {
+  return apiFetch<ApiUser>(`users/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
