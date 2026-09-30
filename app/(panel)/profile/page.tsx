@@ -138,7 +138,6 @@ export default function ProfilePage() {
           { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
           { label: "Perfil de Usuário", icon: "person" },
         ]}
-        onRefresh={loadUserData}
       />
 
       {isLoading ? (
