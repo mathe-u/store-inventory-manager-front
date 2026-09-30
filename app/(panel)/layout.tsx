@@ -225,10 +225,10 @@ export default function DashboardLayout({
         {/* Área do Perfil */}
         <div className="px-3 mt-auto">
           <div
-            className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${
+            className={`flex items-center gap-3 p-2.5 rounded-xl border transition-colors ${
               isProfileActive
-                ? "bg-slate-100 border-slate-300 dark:bg-slate-800 dark:border-slate-700"
-                : "border-outline-variant/60 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                ? "bg-slate-100 border-slate-200"
+                : "border-outline-variant/60 hover:bg-slate-50"
             }`}
           >
             <Link
