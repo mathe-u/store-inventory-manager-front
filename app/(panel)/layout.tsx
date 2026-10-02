@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { logout, getUserById, parseJwt, ApiUser } from "@/src/lib/api";
+import { logout, getUserById, parseJwt, ApiUser, clearTokens } from "@/src/lib/api";
 import { UserContext } from "@/src/contexts/UserContext";
 
 export default function DashboardLayout({
@@ -30,28 +30,24 @@ export default function DashboardLayout({
       })
       .catch((err) => {
         console.error("Erro ao buscar usuário:", err);
-        localStorage.removeItem("API_TOKEN");
-        localStorage.removeItem("REMEMBER_ME");
+        clearTokens();
         router.push("/");
       })
     } else {
+      clearTokens();
       router.push("/");
     }
   }, [router]);
 
-  
-
-
   const handleLogout = async () => {
     try {
-      // Chama o endpoint para salvar o token atual na blacklist do backend
+      // Chama o endpoint para revogar o token de acesso e de refresh no backend
       await logout();
     } catch (err) {
       console.error("Erro ao invalidar o token no backend:", err);
     } finally {
-      // Remove o token do armazenamento local
-      localStorage.removeItem("API_TOKEN");
-      localStorage.removeItem("REMEMBER_ME");
+      // Remove os tokens do armazenamento local
+      clearTokens();
       
       // Redireciona o usuário de volta para a página de login
       router.push("/");

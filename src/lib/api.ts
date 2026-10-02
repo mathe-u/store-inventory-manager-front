@@ -1,13 +1,57 @@
 const BASE_URL = "http://127.0.0.1:3333/api/v1";
 
-function getToken(): string | null {
+export function getToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("API_TOKEN");
+}
+
+export function getRefreshToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("REFRESH_TOKEN");
+}
+
+export function setTokens(accessToken: string, refreshToken: string) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("API_TOKEN", accessToken);
+  localStorage.setItem("REFRESH_TOKEN", refreshToken);
+}
+
+export function clearTokens() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("API_TOKEN");
+  localStorage.removeItem("REFRESH_TOKEN");
+  localStorage.removeItem("REMEMBER_ME");
+}
+
+let refreshPromise: Promise<{ token: string; refreshToken: string }> | null = null;
+
+export async function refreshTokenApi(): Promise<{ token: string; refreshToken: string }> {
+  const currentRefreshToken = getRefreshToken();
+  if (!currentRefreshToken) {
+    clearTokens();
+    throw new Error("No refresh token available");
+  }
+
+  const response = await fetch(`${BASE_URL}/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken: currentRefreshToken }),
+  });
+
+  if (!response.ok) {
+    clearTokens();
+    throw new Error("Sessão expirada. Por favor, faça login novamente.");
+  }
+
+  const data: { token: string; refreshToken: string } = await response.json();
+  setTokens(data.token, data.refreshToken);
+  return data;
 }
 
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
+  isRetry: boolean = false,
 ): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
@@ -20,11 +64,33 @@ async function apiFetch<T>(
   }
 
   const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+  const isAuthRoute = cleanPath.startsWith("auth/login") || cleanPath.startsWith("auth/refresh");
 
-  const response = await fetch(`${BASE_URL}/${cleanPath}`, {
+  let response = await fetch(`${BASE_URL}/${cleanPath}`, {
     ...options,
     headers,
   });
+
+  if (response.status === 401 && !isAuthRoute && !isRetry) {
+    try {
+      if (!refreshPromise) {
+        refreshPromise = refreshTokenApi().finally(() => {
+          refreshPromise = null;
+        });
+      }
+      const newTokens = await refreshPromise;
+      headers["Authorization"] = `Bearer ${newTokens.token}`;
+      response = await fetch(`${BASE_URL}/${cleanPath}`, {
+        ...options,
+        headers,
+      });
+    } catch (err) {
+      if (typeof window !== "undefined" && window.location.pathname !== "/") {
+        window.location.href = "/";
+      }
+      throw err;
+    }
+  }
 
   if (response.status === 404) {
     const error = await response.json().catch(() => ({
@@ -47,6 +113,8 @@ async function apiFetch<T>(
 
 export interface LoginResponse {
   token: string;
+  refreshToken: string;
+  user: ApiUser;
 }
 
 export async function login(email: string, password: string) {
@@ -57,8 +125,10 @@ export async function login(email: string, password: string) {
 }
 
 export async function logout(): Promise<{ message: string }> {
+  const refreshToken = getRefreshToken();
   return apiFetch<{ message: string }>("auth/logout", {
     method: "POST",
+    body: JSON.stringify({ refreshToken }),
   });
 }
 
