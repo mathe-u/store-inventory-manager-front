@@ -35,13 +35,13 @@ export default function ProfilePage() {
     setIsLoading(true);
     setError("");
     setSuccessMessage("");
-    const token = localStorage.getItem("API_TOKEN");
-    if (!token) {
+    const accessToken = localStorage.getItem("ACCESS_TOKEN") || localStorage.getItem("API_TOKEN");
+    if (!accessToken) {
       router.push("/");
       return;
     }
 
-    const decoded = parseJwt(token);
+    const decoded = parseJwt(accessToken);
     if (!decoded || !decoded.sub) {
       router.push("/");
       return;

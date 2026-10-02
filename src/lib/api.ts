@@ -1,8 +1,12 @@
 const BASE_URL = "http://127.0.0.1:3333/api/v1";
 
-export function getToken(): string | null {
+export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("API_TOKEN");
+  return localStorage.getItem("ACCESS_TOKEN") || localStorage.getItem("API_TOKEN");
+}
+
+export function getToken(): string | null {
+  return getAccessToken();
 }
 
 export function getRefreshToken(): string | null {
@@ -12,20 +16,22 @@ export function getRefreshToken(): string | null {
 
 export function setTokens(accessToken: string, refreshToken: string) {
   if (typeof window === "undefined") return;
-  localStorage.setItem("API_TOKEN", accessToken);
+  localStorage.setItem("ACCESS_TOKEN", accessToken);
   localStorage.setItem("REFRESH_TOKEN", refreshToken);
+  localStorage.removeItem("API_TOKEN");
 }
 
 export function clearTokens() {
   if (typeof window === "undefined") return;
+  localStorage.removeItem("ACCESS_TOKEN");
   localStorage.removeItem("API_TOKEN");
   localStorage.removeItem("REFRESH_TOKEN");
   localStorage.removeItem("REMEMBER_ME");
 }
 
-let refreshPromise: Promise<{ token: string; refreshToken: string }> | null = null;
+let refreshPromise: Promise<{ accessToken: string; refreshToken: string }> | null = null;
 
-export async function refreshTokenApi(): Promise<{ token: string; refreshToken: string }> {
+export async function refreshTokenApi(): Promise<{ accessToken: string; refreshToken: string }> {
   const currentRefreshToken = getRefreshToken();
   if (!currentRefreshToken) {
     clearTokens();
@@ -43,8 +49,8 @@ export async function refreshTokenApi(): Promise<{ token: string; refreshToken: 
     throw new Error("Sessão expirada. Por favor, faça login novamente.");
   }
 
-  const data: { token: string; refreshToken: string } = await response.json();
-  setTokens(data.token, data.refreshToken);
+  const data: { accessToken: string; refreshToken: string } = await response.json();
+  setTokens(data.accessToken, data.refreshToken);
   return data;
 }
 
@@ -53,14 +59,14 @@ async function apiFetch<T>(
   options: RequestInit = {},
   isRetry: boolean = false,
 ): Promise<T> {
-  const token = getToken();
+  const accessToken = getAccessToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
   };
 
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
   }
 
   const cleanPath = path.startsWith("/") ? path.slice(1) : path;
@@ -79,7 +85,7 @@ async function apiFetch<T>(
         });
       }
       const newTokens = await refreshPromise;
-      headers["Authorization"] = `Bearer ${newTokens.token}`;
+      headers["Authorization"] = `Bearer ${newTokens.accessToken}`;
       response = await fetch(`${BASE_URL}/${cleanPath}`, {
         ...options,
         headers,
@@ -112,7 +118,7 @@ async function apiFetch<T>(
 // ─── Authentication ─── //
 
 export interface LoginResponse {
-  token: string;
+  accessToken: string;
   refreshToken: string;
   user: ApiUser;
 }

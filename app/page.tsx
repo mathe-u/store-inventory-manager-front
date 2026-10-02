@@ -20,8 +20,8 @@ export default function LoginPage() {
     setSuccess(false);
 
     try {
-      const { token, refreshToken } = await login(email, password);
-      localStorage.setItem("API_TOKEN", token);
+      const { accessToken, refreshToken } = await login(email, password);
+      localStorage.setItem("ACCESS_TOKEN", accessToken);
       localStorage.setItem("REFRESH_TOKEN", refreshToken);
       if (rememberMe) {
         localStorage.setItem("REMEMBER_ME", "true");

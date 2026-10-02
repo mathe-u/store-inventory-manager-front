@@ -17,13 +17,13 @@ export default function DashboardLayout({
   const [user, setUser] = useState<ApiUser | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("API_TOKEN");
-    if (!token) {
+    const accessToken = localStorage.getItem("ACCESS_TOKEN") || localStorage.getItem("API_TOKEN");
+    if (!accessToken) {
       router.push("/");
       return;
     }
 
-    const decoded = parseJwt(token);
+    const decoded = parseJwt(accessToken);
     if (decoded && decoded.sub) {
       getUserById(decoded.sub).then((user) => {
         setUser(user);
