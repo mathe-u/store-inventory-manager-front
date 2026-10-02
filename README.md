@@ -2,6 +2,8 @@
 
 > Painel de gestão de estoque, vendas e precificação para vendedores de Marketplace.
 
+![Dashboard Market Manager](public/assets/dashboard-preview.png)
+
 ---
 
 ## Sumário
